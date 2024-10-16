@@ -6,7 +6,7 @@ from torch import Tensor
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import torch
 from models.layers import (
-    PatchRecoveryPowerAll,
+    PatchRecoveryPowerUpper,
     PatchRecovery_pretrain,
     PowerConv,
     PowerConvWithSigmoid,
@@ -37,7 +37,7 @@ class PanguPowerPatchRecovery(PanguModel):
 
         # Replace the output layer with PatchRecovery_transfer
         self._output_weather_layer = PatchRecovery_pretrain(dims[-2])
-        self._output_power_layer = PatchRecoveryPowerAll(dims[-2])  # dims[-2] = 384
+        self._output_power_layer = PatchRecoveryPowerUpper(dims[-2])  # dims[-2] = 384
 
     def forward(
         self,

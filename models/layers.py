@@ -846,7 +846,7 @@ class PatchRecoveryPowerSurface(nn.Module):
         return output
 
 
-class PatchRecoveryPowerAll(nn.Module):
+class PatchRecoveryPowerUpper(nn.Module):
     def __init__(self, dim):
         super().__init__()
         """Patch recovery operation"""
@@ -854,7 +854,7 @@ class PatchRecoveryPowerAll(nn.Module):
         self.patch_size = (2, 4, 4)
         self.dim = dim  # 384
 
-        self.conv = nn.Conv1d(in_channels=dim, out_channels=14, kernel_size=1, stride=1)
+        self.conv = nn.Conv1d(in_channels=dim, out_channels=32, kernel_size=1, stride=1)
 
     def forward(self, x, Z, H, W):  # x: [1, 521280, 384], Z: 8, H: 181, W: 360
         # The inverse operation of the patch embedding operation, patch_size = (2, 4, 4) as in the original paper
@@ -862,38 +862,41 @@ class PatchRecoveryPowerAll(nn.Module):
         x = torch.permute(x, (0, 2, 1))  # [1, 384, 521280]
         x = x.view(x.shape[0], x.shape[1], Z, H, W)  # [1, 384, 8, 181, 360]
 
+        # Slice out atmospheric data
+        output = x[:, :, 1:, :, :]  # [1, 384, 7, 181, 360]
+
         # Flatten
-        output = x.view(x.shape[0], x.shape[1], -1)  # [1, 384, 521280]
+        output = output.view(output.shape[0], output.shape[1], -1)  # [1, 384, 456120]
 
         # Apply upper convolution
-        output = self.conv(output)  # [1, 32, 521280]
+        output = self.conv(output)  # [1, 32, 456120]
 
         # Recover [724, 1440] shape
         output = output.reshape(
             output.shape[0],
             1,
-            1,
+            self.patch_size[0],
             self.patch_size[1],
             self.patch_size[2],
             Z - 1,
             H,
             W,
-        )  # [1, 1, 1, 4, 4, 8, 181, 360]
+        )  # [1, 1, 2, 4, 4, 7, 181, 360]
         output = torch.permute(
             output, (0, 1, 5, 2, 6, 3, 7, 4)
-        )  # [1, 1, 7, 1, 181, 4, 360, 4]
+        )  # [1, 1, 7, 2, 181, 4, 360, 4]
         output = output.reshape(
-            output.shape[0], 1, 7, 724, 1440
-        )  # [1, 1, 7, 724, 1440]
+            output.shape[0], 1, 14, 724, 1440
+        )  # [1, 1, 14, 724, 1440]
 
         # Remove padding
         depth_slice = slice(0, output.shape[-3] - 1)
         height_slice = slice(0, output.shape[-2] - 3)
-        output = output[:, :, depth_slice, height_slice, :]  # [1, 1, 6, 721, 1440]
+        output = output[:, :, depth_slice, height_slice, :]  # [1, 1, 13, 721, 1440]
         output = output.view(
-            output.shape[0], 1, 1, 6, 721, 1440
-        )  # [1, 1, 1, 6, 721, 1440]
-        output = output.view(output.shape[0], 1, 6, 721, 1440)  # [1, 1, 15, 721, 1440]
+            output.shape[0], 1, 1, 13, 721, 1440
+        )  # [1, 1, 1, 13, 721, 1440]
+        output = output.view(output.shape[0], 1, 13, 721, 1440)  # [1, 1, 13, 721, 1440]
 
         # Sum the output along the pressure levels
         output = torch.sum(output, dim=2)  # [1, 1, 721, 1440]
@@ -1000,7 +1003,7 @@ def main():
     W = 360
 
     # Instantiate the PatchRecoveryAll class
-    model = PatchRecoveryPowerAll(dim=384)
+    model = PatchRecoveryPowerUpper(dim=384)
 
     # Call the forward method
     output = model.forward(x, Z, H, W)
