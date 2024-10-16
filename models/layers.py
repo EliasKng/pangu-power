@@ -899,7 +899,8 @@ class PatchRecoveryPowerUpper(nn.Module):
         output = output.view(output.shape[0], 1, 13, 721, 1440)  # [1, 1, 13, 721, 1440]
 
         # Sum the output along the pressure levels
-        output = torch.sum(output, dim=2)  # [1, 1, 721, 1440]
+        output = output[:, :, 0, :, :]  # [1, 1, 1, 721, 1440]
+        output = output.view(output.shape[0], 1, 721, 1440)  # [1, 1, 721, 1440]
 
         return output
 
