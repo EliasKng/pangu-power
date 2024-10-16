@@ -854,7 +854,7 @@ class PatchRecoveryPowerAll(nn.Module):
         self.patch_size = (2, 4, 4)
         self.dim = dim  # 384
 
-        self.conv = nn.Conv1d(in_channels=dim, out_channels=16, kernel_size=1, stride=1)
+        self.conv = nn.Conv1d(in_channels=dim, out_channels=14, kernel_size=1, stride=1)
 
     def forward(self, x, Z, H, W):  # x: [1, 521280, 384], Z: 8, H: 181, W: 360
         # The inverse operation of the patch embedding operation, patch_size = (2, 4, 4) as in the original paper
@@ -875,25 +875,25 @@ class PatchRecoveryPowerAll(nn.Module):
             1,
             self.patch_size[1],
             self.patch_size[2],
-            Z,
+            Z - 1,
             H,
             W,
         )  # [1, 1, 1, 4, 4, 8, 181, 360]
         output = torch.permute(
             output, (0, 1, 5, 2, 6, 3, 7, 4)
-        )  # [1, 1, 8, 1, 181, 4, 360, 4]
+        )  # [1, 1, 7, 1, 181, 4, 360, 4]
         output = output.reshape(
-            output.shape[0], 1, 8, 724, 1440
-        )  # [1, 1, 8, 724, 1440]
+            output.shape[0], 1, 7, 724, 1440
+        )  # [1, 1, 7, 724, 1440]
 
         # Remove padding
         depth_slice = slice(0, output.shape[-3] - 1)
         height_slice = slice(0, output.shape[-2] - 3)
-        output = output[:, :, depth_slice, height_slice, :]  # [1, 1, 7, 721, 1440]
+        output = output[:, :, depth_slice, height_slice, :]  # [1, 1, 6, 721, 1440]
         output = output.view(
-            output.shape[0], 1, 1, 7, 721, 1440
-        )  # [1, 1, 1, 7, 721, 1440]
-        output = output.view(output.shape[0], 1, 7, 721, 1440)  # [1, 1, 15, 721, 1440]
+            output.shape[0], 1, 1, 6, 721, 1440
+        )  # [1, 1, 1, 6, 721, 1440]
+        output = output.view(output.shape[0], 1, 6, 721, 1440)  # [1, 1, 15, 721, 1440]
 
         # Sum the output along the pressure levels
         output = torch.sum(output, dim=2)  # [1, 1, 721, 1440]
