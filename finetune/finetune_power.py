@@ -36,7 +36,12 @@ def setup_model(model_type: str, device: torch.device) -> torch.nn.Module:
     """
     if model_type == "PanguPowerPatchRecovery":
         model = PanguPowerPatchRecovery(device=device).to(device)
-        model.load_pangu_state_dict(device)
+        checkpoint = torch.load(
+            "/home/hk-project-test-mlperf/om1434/masterarbeit/wind_fusion/pangu_pytorch/result/PatchRecoveryAll_Test5/24/models/train_19.pth",
+            map_location=device,
+            weights_only=False,
+        )
+        model.load_state_dict(checkpoint["model"])
 
         # Only finetune the last layer
         set_requires_grad(model, "_output_power_layer")
@@ -198,7 +203,9 @@ def main(args: argparse.Namespace) -> None:
 
     if args.load_my_best:
         best_model = torch.load(
-            os.path.join(output_path, "models/best_model.pth"), map_location="cuda:0"
+            os.path.join(output_path, "models/best_model.pth"),
+            map_location="cuda:0",
+            weights_only=False,
         )
 
     logger.info("Begin testing...")
