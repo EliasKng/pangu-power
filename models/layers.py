@@ -961,6 +961,17 @@ class PatchRecoveryPowerAll(nn.Module):
         return output
 
 
+class PatchRecoveryPowerAllWithClippedReLU(PatchRecoveryPowerAll):
+    def forward(self, x, Z, H, W):
+        output = super().forward(x, Z, H, W)
+        output = self.clipped_relu(output)
+        return output
+
+    @staticmethod
+    def clipped_relu(x):
+        return torch.clamp(F.relu(x), min=0, max=1)
+
+
 class PowerConv(nn.Module):
     """
     A (series of) convolutional layer(s) to finetune on the power prediction task.
