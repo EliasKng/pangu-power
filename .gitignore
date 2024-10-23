@@ -2,7 +2,6 @@
 
 **/__pycache__/
 
-# TODO
 result/
 fig/
 
@@ -13,3 +12,13 @@ fig/
 *.out
 
 data
+
+venv/
+
+*.log
+
+huggingface_data/
+
+.vscode/
+.mypy_cache/
+.ruff_cache/
