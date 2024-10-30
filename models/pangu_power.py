@@ -82,7 +82,7 @@ class PanguPowerPatchRecovery(PanguModel):
         # Skip connect, in last dimension(C from 192 to 384)
         x = torch.cat((skip, x), dim=-1)
 
-        # Calculate weather output (just vor visualization)
+        # Calculate weather output (just for visualization)
         output_upper, output_surface = self._output_weather_layer(x, 8, 181, 360)
 
         # Recover the output fields from patches

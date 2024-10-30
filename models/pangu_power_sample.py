@@ -158,10 +158,6 @@ def train(
                 i,
             )
 
-            # DO NOT COMMIT
-            if rank == 0:
-                early_stop_flag[0] = 1
-
             # Set early stop flag
             if rank == 0 and epochs_since_last_improvement >= 5:
                 logger.info(
