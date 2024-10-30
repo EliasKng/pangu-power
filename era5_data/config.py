@@ -108,3 +108,9 @@ __C.PG.BENCHMARK.PRETRAIN_24_torch = os.path.join(
 )
 
 __C.MODEL = ConfigNamespace()
+
+# Stores the model type to be used in finetune_power. Can be:
+# - PanguPowerPatchRecovery: Replaces the patch recovery layer of pangu with a new convolution that aims to predict power
+# - PanguPowerConv: Adds convolutional layers to the output of pangu to use pangus output to predict power
+# - PanguPowerConvSigmoid: Same as PanguPowerConv but with a sigmoid activation function at the end
+__C.ENERGY.MODEL_TYPE = "PanguPowerConv"
