@@ -29,6 +29,22 @@ Finetune pangu_power on the energy dataset
 """
 
 
+def load_model(device: torch.device) -> torch.nn.Module:
+    """Loads the model specified in the config file"""
+
+    # We start our training from a specific checkpoint
+    if cfg.POWER.USE_CHECKPOINT:
+        model = torch.load(
+            cfg.POWER.CHECKPOINT,
+            map_location=device,
+            weights_only=False,
+        )
+        return model
+
+    # We start our training from pretrained pangu weights
+    return _initialize_model_with_pangu_weights(cfg.POWER.MODEL_TYPE, device)
+
+
 def _initialize_model_with_pangu_weights(
     model_type: str, device: torch.device
 ) -> torch.nn.Module:
@@ -59,22 +75,6 @@ def _initialize_model_with_pangu_weights(
         raise ValueError("Model not found")
 
     return model
-
-
-def load_model(device: torch.device) -> torch.nn.Module:
-    """Loads the model specified in the config file"""
-
-    # We start our training from a specific checkpoint
-    if cfg.POWER.USE_CHECKPOINT:
-        model = torch.load(
-            cfg.POWER.CHECKPOINT,
-            map_location=device,
-            weights_only=False,
-        )
-        return model
-
-    # We start our training from pretrained pangu weights
-    return _initialize_model_with_pangu_weights(cfg.POWER.MODEL_TYPE, device)
 
 
 def ddp_setup(rank, world_size):
