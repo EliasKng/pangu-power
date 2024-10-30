@@ -107,4 +107,15 @@ __C.PG.BENCHMARK.PRETRAIN_24_torch = os.path.join(
     __C.PG_INPUT_PATH, "pretrained_model/pangu_weather_24_torch.pth"
 )
 
-__C.MODEL = ConfigNamespace()
+__C.POWER = ConfigNamespace()
+
+# Specifies if the model should be trained from scratch (pretrained pangu weights will be used) or if a checkpoint should be used.
+__C.POWER.USE_CHECKPOINT = False
+# If POWER.USE_CHECKPOINT == True: Select the checkpoint to start the training from. The model is loaded from the checkpoint.
+__C.POWER.CHECKPOINT = "/home/hk-project-test-mlperf/om1434/masterarbeit/wind_fusion/pangu_pytorch/result/PanguPowerConv_64_128_64_1_k3_2/24/models/best_model.pth"
+# If POWER.USE_CHECKPOINT == False: Specify the type of model to be initialized w/ pangu weights
+# Can be:
+# - PanguPowerPatchRecovery: Replaces the patch recovery layer of pangu with a new convolution that aims to predict power
+# - PanguPowerConv: Adds convolutional layers to the output of pangu to use pangus output to predict power
+# - PanguPowerConvSigmoid: Same as PanguPowerConv but with a sigmoid activation function at the end
+__C.POWER.MODEL_TYPE = "PanguPowerConv"

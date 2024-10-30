@@ -16,6 +16,8 @@ from models.pangu_model import PanguModel
 
 
 class PanguPowerPatchRecovery(PanguModel):
+    """Replaces the patch recovery layer of pangu with a new convolution that aims to predict power"""
+
     def __init__(
         self,
         depths: List[int] = [2, 6, 6, 2],
@@ -80,7 +82,7 @@ class PanguPowerPatchRecovery(PanguModel):
         # Skip connect, in last dimension(C from 192 to 384)
         x = torch.cat((skip, x), dim=-1)
 
-        # Calculate weather output (just vor visualization)
+        # Calculate weather output (just for visualization)
         output_upper, output_surface = self._output_weather_layer(x, 8, 181, 360)
 
         # Recover the output fields from patches
@@ -118,6 +120,8 @@ class PanguPowerPatchRecovery(PanguModel):
 
 
 class PanguPowerConv(PanguModel):
+    """Adds convolutional layers to the output of pangu to use pangus output to predict power"""
+
     def __init__(
         self,
         depths: List[int] = [2, 6, 6, 2],
@@ -184,6 +188,8 @@ class PanguPowerConv(PanguModel):
 
 
 class PanguPowerConvSigmoid(PanguPowerConv):
+    """Same as PanguPowerConv but with a sigmoid activation function at the end"""
+
     def __init__(
         self,
         depths: List[int] = [2, 6, 6, 2],
