@@ -17,8 +17,8 @@ from torch.utils import data
 from models.pangu_power_sample import test, train
 from models.pangu_power import (
     PanguPowerPatchRecovery,
-    PanguPowerConv,
     PanguPowerConvSigmoid,
+    PanguPowerConv,
 )
 import argparse
 import logging
@@ -29,33 +29,22 @@ Finetune pangu_power on the energy dataset
 """
 
 
-def setup_model(model_type: str, device: torch.device) -> torch.nn.Module:
-    """Loads the specified model and sets requires_grad
-
-    Parameters
-    ----------
-    model_type : str. Can be one of the following:
-        PanguPowerPatchRecovery: Replaces the patch recovery layer of pangu with a new convolution that aims to predict power
-        PanguPowerConv: Adds convolutional layers to the output of pangu to use pangus output to predict power
-        PanguPowerConvSigmoid: Same as PanguPowerConv but with a sigmoid activation function at the end
-    """
+def _initialize_model_with_pangu_weights(
+    model_type: str, device: torch.device
+) -> torch.nn.Module:
+    """Initializes the specified model and loads pretrained pangu weights"""
     if model_type == "PanguPowerPatchRecovery":
         model = PanguPowerPatchRecovery(device=device).to(device)
         model.load_pangu_state_dict(device)
-
         # Only finetune the last layer
         set_requires_grad(model, "_output_power_layer")
 
     elif model_type == "PanguPowerConv":
         model = PanguPowerConv(device=device).to(device)
         checkpoint = torch.load(
-            "/home/hk-project-test-mlperf/om1434/masterarbeit/wind_fusion/pangu_pytorch/result/PanguPowerConv_64_128_64_1_k3_2/24/models/train_6.pth",
-            map_location=device,
-            weights_only=False,
+            cfg.PG.BENCHMARK.PRETRAIN_24_torch, map_location=device, weights_only=False
         )
-        model.load_state_dict(checkpoint["model"])
-
-        # Only finetune the last layer
+        model.load_state_dict(checkpoint["model"], strict=False)
         set_requires_grad(model, "_conv_power_layers")
 
     elif model_type == "PanguPowerConvSigmoid":
@@ -70,6 +59,22 @@ def setup_model(model_type: str, device: torch.device) -> torch.nn.Module:
         raise ValueError("Model not found")
 
     return model
+
+
+def load_model(device: torch.device) -> torch.nn.Module:
+    """Loads the model specified in the config file"""
+
+    # We start our training from a specific checkpoint
+    if cfg.POWER.USE_CHECKPOINT:
+        model = torch.load(
+            cfg.POWER.CHECKPOINT,
+            map_location=device,
+            weights_only=False,
+        )
+        return model
+
+    # We start our training from pretrained pangu weights
+    return _initialize_model_with_pangu_weights(cfg.POWER.MODEL_TYPE, device)
 
 
 def ddp_setup(rank, world_size):
@@ -139,7 +144,6 @@ def set_requires_grad(model: torch.nn.Module, layer_name: str) -> None:
     for name, param in model.named_parameters():
         if layer_name in name:
             param.requires_grad = True
-            print("Requires grad: ", name)
 
 
 def setup_writer(output_path: str) -> SummaryWriter:
@@ -195,7 +199,7 @@ def main(rank: int, args: argparse.Namespace, world_size: int) -> None:
         False,
     )
 
-    model = setup_model(cfg.POWER.MODEL_TYPE, device)
+    model = load_model(device)
     model = DDP(model, device_ids=[device])
 
     optimizer = Adam(
@@ -239,12 +243,11 @@ def test_best_model(args):
     logger.info("Begin testing...")
     device = _get_device(0)
 
-    if args.load_my_best:
-        best_model = torch.load(
-            os.path.join(output_path, "models/best_model.pth"),
-            map_location=device,
-            weights_only=False,
-        )
+    best_model = torch.load(
+        os.path.join(output_path, "models/best_model.pth"),
+        map_location=device,
+        weights_only=False,
+    )
 
     test_dataloader = create_dataloader(
         cfg.PG.TEST.START_TIME,
