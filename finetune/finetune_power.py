@@ -34,8 +34,10 @@ def setup_model(model_type: str, device: torch.device) -> torch.nn.Module:
 
     Parameters
     ----------
-    model_type : str
-        Which model to load
+    model_type : str. Can be one of the following:
+        PanguPowerPatchRecovery: Replaces the patch recovery layer of pangu with a new convolution that aims to predict power
+        PanguPowerConv: Adds convolutional layers to the output of pangu to use pangus output to predict power
+        PanguPowerConvSigmoid: Same as PanguPowerConv but with a sigmoid activation function at the end
     """
     if model_type == "PanguPowerPatchRecovery":
         model = PanguPowerPatchRecovery(device=device).to(device)
@@ -71,8 +73,10 @@ def setup_model(model_type: str, device: torch.device) -> torch.nn.Module:
 
 
 def ddp_setup(rank, world_size):
-    """
-    Args:
+    """Initializes the process group and sets the device for DDP
+
+    Parameters
+    ----------
         rank: Unique identifier of each process
         world_size: Total number of processes
     """
