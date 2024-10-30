@@ -726,6 +726,19 @@ class PatchRecovery_pretrain(nn.Module):
         )
 
     def forward(self, x, Z, H, W):  # x: [1, 521280, 384], Z: 8, H: 181, W: 360
+        """Recovers original patches.
+
+        Parameters
+        ----------
+        x : Output of the UpSample operation
+        Z : Dimension of the different pressure levels. Later we will have 13 pressure levels + surface level. [surface level, (7 * 2)-1 pressure levels. The 2 origins from the patch size (2, 4, 4), the -1 is removal of zero-padding]
+        H : Number of patches in the height direction (181 * 4 = 724). After removal of padding, we receive 721 as output height dimension.
+        W : Number of patches in the width direction (360 * 4 = 1440)
+
+        Returns
+        -------
+        Final pangu weather output for both surface and upper variables.
+        """
         # The inverse operation of the patch embedding operation, patch_size = (2, 4, 4) as in the original paper
         # Reshape x back to three dimensions
         x = torch.permute(x, (0, 2, 1))  # [1, 384, 521280]
@@ -817,6 +830,10 @@ class PatchRecoveryPowerSurface(nn.Module):
         self.conv = nn.Conv1d(in_channels=dim, out_channels=16, kernel_size=1, stride=1)
 
     def forward(self, x, Z, H, W):  # x: [1, 521280, 384], Z: 8, H: 181, W: 360
+        """Adaption of the original forward pass of the PatchRecivery (PatchRecovery_pretrain).
+        - Only surface level is used
+        - Convolution with lower output channels to reduce the output to one variable insted of 4
+        """
         # Reshape x back to three dimensions
         x = torch.permute(x, (0, 2, 1))  # [1, 384, 521280]
         x = x.view(x.shape[0], x.shape[1], Z, H, W)  # [1, 384, 8, 181, 360]
@@ -857,6 +874,10 @@ class PatchRecoveryPowerUpper(nn.Module):
         self.conv = nn.Conv1d(in_channels=dim, out_channels=32, kernel_size=1, stride=1)
 
     def forward(self, x, Z, H, W):  # x: [1, 521280, 384], Z: 8, H: 181, W: 360
+        """Adaption of the original forward pass of the PatchRecivery (PatchRecovery_pretrain).
+        - Only upper levels are used
+        - Convolution with lower output channels to reduce the output to one variable insted of 4
+        """
         # The inverse operation of the patch embedding operation, patch_size = (2, 4, 4) as in the original paper
         # Reshape x back to three dimensions
         x = torch.permute(x, (0, 2, 1))  # [1, 384, 521280]
@@ -916,6 +937,9 @@ class PatchRecoveryPowerAll(nn.Module):
         self.conv = nn.Conv1d(in_channels=dim, out_channels=16, kernel_size=1, stride=1)
 
     def forward(self, x, Z, H, W):  # x: [1, 521280, 384], Z: 8, H: 181, W: 360
+        """Adaption of the original forward pass of the PatchRecivery (PatchRecovery_pretrain).
+        - All pressure-levels are used
+        """
         # The inverse operation of the patch embedding operation, patch_size = (2, 4, 4) as in the original paper
         # Reshape x back to three dimensions
         x = torch.permute(x, (0, 2, 1))  # [1, 384, 521280]
