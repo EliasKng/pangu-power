@@ -195,7 +195,7 @@ def main(rank: int, args: argparse.Namespace, world_size: int) -> None:
         False,
     )
 
-    model = setup_model(cfg.ENERGY.MODEL_TYPE, device)
+    model = setup_model(cfg.POWER.MODEL_TYPE, device)
     model = DDP(model, device_ids=[device])
 
     optimizer = Adam(
