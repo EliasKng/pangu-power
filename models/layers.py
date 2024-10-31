@@ -714,7 +714,7 @@ class PatchRecovery_pretrain(nn.Module):
     def __init__(self, dim):
         super().__init__()
         """Patch recovery operation"""
-        # Hear we use two transposed convolutions to recover data
+        # Here we use two transposed convolutions to recover data
         self.patch_size = (2, 4, 4)
         self.dim = dim  # 384
         # Bekomme 384 Enigabebilder, Projiziere runter auf 160 Aufgabebilder
@@ -831,6 +831,7 @@ class PatchRecoveryPowerSurface(nn.Module):
 
     def forward(self, x, Z, H, W):  # x: [1, 521280, 384], Z: 8, H: 181, W: 360
         """Adaption of the original forward pass of the PatchRecivery (PatchRecovery_pretrain).
+        See the original forward pass for more details.
         - Only surface level is used
         - Convolution with lower output channels to reduce the output to one variable insted of 4
         """
@@ -867,7 +868,6 @@ class PatchRecoveryPowerUpper(nn.Module):
     def __init__(self, dim):
         super().__init__()
         """Patch recovery operation"""
-        # Hear we use two transposed convolutions to recover data
         self.patch_size = (2, 4, 4)
         self.dim = dim  # 384
 
@@ -875,6 +875,7 @@ class PatchRecoveryPowerUpper(nn.Module):
 
     def forward(self, x, Z, H, W):  # x: [1, 521280, 384], Z: 8, H: 181, W: 360
         """Adaption of the original forward pass of the PatchRecivery (PatchRecovery_pretrain).
+        See the original forward pass for more details.
         - Only upper levels are used
         - Convolution with lower output channels to reduce the output to one variable insted of 4
         """
@@ -930,7 +931,6 @@ class PatchRecoveryPowerAll(nn.Module):
     def __init__(self, dim):
         super().__init__()
         """Patch recovery operation"""
-        # Hear we use two transposed convolutions to recover data
         self.patch_size = (2, 4, 4)
         self.dim = dim  # 384
 
@@ -938,6 +938,7 @@ class PatchRecoveryPowerAll(nn.Module):
 
     def forward(self, x, Z, H, W):  # x: [1, 521280, 384], Z: 8, H: 181, W: 360
         """Adaption of the original forward pass of the PatchRecivery (PatchRecovery_pretrain).
+        See the original forward pass for more details.
         - All pressure-levels are used
         """
         # The inverse operation of the patch embedding operation, patch_size = (2, 4, 4) as in the original paper
@@ -986,6 +987,8 @@ class PatchRecoveryPowerAll(nn.Module):
 
 
 class PatchRecoveryPowerAllWithClippedReLU(PatchRecoveryPowerAll):
+    """Same as PatchRecoveryPowerAll but uses a clipped relu at the very end"""
+
     def forward(self, x, Z, H, W):
         output = super().forward(x, Z, H, W)
         output = self.clipped_relu(output)
