@@ -118,4 +118,4 @@ __C.POWER.CHECKPOINT = "/home/hk-project-test-mlperf/om1434/masterarbeit/wind_fu
 # - PanguPowerPatchRecovery: Replaces the patch recovery layer of pangu with a new convolution that aims to predict power
 # - PanguPowerConv: Adds convolutional layers to the output of pangu to use pangus output to predict power
 # - PanguPowerConvSigmoid: Same as PanguPowerConv but with a sigmoid activation function at the end
-__C.POWER.MODEL_TYPE = "PanguPowerConv"
+__C.POWER.MODEL_TYPE = "PanguPowerPatchRecovery"
