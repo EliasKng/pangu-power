@@ -43,7 +43,7 @@ def _setup_lora(model):
         lora_alpha=16,
         target_modules=target_modules,
         lora_dropout=0.1,
-        modules_to_save=["_output_power_layer", "_output_power_layer.conv"],
+        modules_to_save=["_output_power_layer"],
     )
 
     # module_copy = copy.deepcopy(model)  # we keep a copy of the original model for later
@@ -223,9 +223,15 @@ def main(rank: int, args: argparse.Namespace, world_size: int) -> None:
     )
 
     model = load_model(device)
-    model = _setup_lora(model)
 
-    model = DDP(model, device_ids=[device])
+    if cfg.POWER.LORA:
+        model = _setup_lora(model)
+
+    model = DDP(model, device_ids=[device], find_unused_parameters=True)
+
+    # If static graph is not set, LoRA returns errors.
+    if cfg.POWER.LORA:
+        model._set_static_graph()
 
     optimizer = Adam(
         filter(lambda p: p.requires_grad, model.parameters()),
@@ -292,7 +298,7 @@ def test_best_model(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--type_net", type=str, default="PatchRecovery_LoRA_Dist_Test1")
+    parser.add_argument("--type_net", type=str, default="PatchRecovery_LoRA_Dist_Test2")
     parser.add_argument("--load_my_best", type=bool, default=True)
     parser.add_argument("--launcher", default="pytorch", help="job launcher")
     parser.add_argument("--local-rank", type=int, default=0)
@@ -304,7 +310,7 @@ if __name__ == "__main__":
     print(f"World size: {world_size}")
 
     if args.dist and torch.cuda.is_available():
-        mp.spawn(main, args=(args, world_size), nprocs=world_size)
+        mp.spawn(main, args=(args, world_size), nprocs=world_size) # type: ignore
     else:
         main(0, args, 1)
     test_best_model(args)
