@@ -21,7 +21,7 @@ if __name__ == "__main__":
     check pg-power model performance
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument("--type_net", type=str, default="testestest")
+    parser.add_argument("--type_net", type=str, default="testestest2")
     args = parser.parse_args()
     starts = time.time()
 

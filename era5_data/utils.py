@@ -66,18 +66,18 @@ def visuailze(output, target, input, var, z, step, path):
     max_bias = _calc_max_bias(output[var, z, :, :], target[var, z, :, :])
 
     ax_1 = fig.add_subplot(141)
-    plot3 = ax_1.imshow(input[var, z, :, :], cmap="RdBu")
+    plot3 = ax_1.imshow(input[var, z, :, :], cmap="coolwarm")
     plt.colorbar(plot3, ax=ax_1, fraction=0.05, pad=0.05)
     ax_1.title.set_text("input")
 
     ax_2 = fig.add_subplot(142)
-    plot2 = ax_2.imshow(target[var, z, :, :], cmap="RdBu")
+    plot2 = ax_2.imshow(target[var, z, :, :], cmap="coolwarm")
     plt.colorbar(plot2, ax=ax_2, fraction=0.05, pad=0.05)
     ax_2.title.set_text("gt")
 
     ax_3 = fig.add_subplot(143)
     plot1 = ax_3.imshow(
-        output[var, z, :, :], cmap="RdBu"
+        output[var, z, :, :], cmap="coolwarm"
     )  # , levels = levels, extend = 'min')
     plt.colorbar(plot1, ax=ax_3, fraction=0.05, pad=0.05)
     ax_3.title.set_text("pred")
@@ -85,7 +85,7 @@ def visuailze(output, target, input, var, z, step, path):
     ax_4 = fig.add_subplot(144)
     plot4 = ax_4.imshow(
         output[var, z, :, :] - target[var, z, :, :],
-        cmap="RdBu",
+        cmap="coolwarm",
         vmin=-max_bias,
         vmax=max_bias,
     )
@@ -104,26 +104,26 @@ def visuailze_surface(output, target, input, var, step, path):
     max_bias = _calc_max_bias(output[var, :, :], target[var, :, :])
 
     ax_1 = fig.add_subplot(141)
-    plot3 = ax_1.imshow(input[var, :, :], cmap="RdBu")
+    plot3 = ax_1.imshow(input[var, :, :], cmap="coolwarm")
     plt.colorbar(plot3, ax=ax_1, fraction=0.05, pad=0.05)
     ax_1.title.set_text("input")
 
     ax_2 = fig.add_subplot(142)
-    plot2 = ax_2.imshow(target[var, :, :], cmap="RdBu")
+    plot2 = ax_2.imshow(target[var, :, :], cmap="coolwarm")
     plt.colorbar(plot2, ax=ax_2, fraction=0.05, pad=0.05)
-    ax_2.title.set_text("gt")
+    ax_2.title.set_text("gt (Δ 24h)")
 
     ax_3 = fig.add_subplot(143)
     plot1 = ax_3.imshow(
-        output[var, :, :], cmap="RdBu"
+        output[var, :, :], cmap="coolwarm"
     )  # , levels = levels, extend = 'min')
     plt.colorbar(plot1, ax=ax_3, fraction=0.05, pad=0.05)
-    ax_3.title.set_text("pred")
+    ax_3.title.set_text("pred (Δ 24h)")
 
     ax_4 = fig.add_subplot(144)
     plot4 = ax_4.imshow(
         output[var, :, :] - target[var, :, :],
-        cmap="RdBu",
+        cmap="coolwarm",
         vmin=-max_bias,
         vmax=max_bias,
     )
@@ -154,24 +154,24 @@ def visualize_windspeed(output, target, input, step, path):
     fig = plt.figure(figsize=(12, 2))
 
     ax_1 = fig.add_subplot(141)
-    plot3 = ax_1.imshow(wind_speed_input, cmap="RdBu")
+    plot3 = ax_1.imshow(wind_speed_input, cmap="coolwarm")
     plt.colorbar(plot3, ax=ax_1, fraction=0.05, pad=0.05)
     ax_1.title.set_text("input")
 
     ax_2 = fig.add_subplot(142)
-    plot2 = ax_2.imshow(wind_speed_target, cmap="RdBu")
+    plot2 = ax_2.imshow(wind_speed_target, cmap="coolwarm")
     plt.colorbar(plot2, ax=ax_2, fraction=0.05, pad=0.05)
     ax_2.title.set_text("gt (Δ 24h)")
 
     ax_3 = fig.add_subplot(143)
-    plot1 = ax_3.imshow(wind_speed_output, cmap="RdBu")
+    plot1 = ax_3.imshow(wind_speed_output, cmap="coolwarm")
     plt.colorbar(plot1, ax=ax_3, fraction=0.05, pad=0.05)
     ax_3.title.set_text("pred (Δ 24h)")
 
     ax_4 = fig.add_subplot(144)
     plot4 = ax_4.imshow(
         wind_speed_output - wind_speed_target,
-        cmap="RdBu",
+        cmap="coolwarm",
         vmin=-max_bias,
         vmax=max_bias,
     )
@@ -198,24 +198,24 @@ def visuailze_power(output, target, input, step, path):
     fig = plt.figure(figsize=(12, 2))
 
     ax_1 = fig.add_subplot(141)
-    plot3 = ax_1.imshow(wind_speed, cmap="RdBu")
+    plot3 = ax_1.imshow(wind_speed, cmap="coolwarm")
     plt.colorbar(plot3, ax=ax_1, fraction=0.05, pad=0.05)
-    ax_1.title.set_text("input[wind speed]")
+    ax_1.title.set_text("input[ws]")
 
     ax_2 = fig.add_subplot(142)
-    plot2 = ax_2.imshow(target, cmap="RdBu")
+    plot2 = ax_2.imshow(target, cmap="coolwarm")
     plt.colorbar(plot2, ax=ax_2, fraction=0.05, pad=0.05)
-    ax_2.title.set_text("gt")
+    ax_2.title.set_text("gt[ws] (Δ 24h)")
 
     ax_3 = fig.add_subplot(143)
-    plot1 = ax_3.imshow(output, cmap="RdBu")  # , levels = levels, extend = 'min')
+    plot1 = ax_3.imshow(output, cmap="coolwarm")  # , levels = levels, extend = 'min')
     plt.colorbar(plot1, ax=ax_3, fraction=0.05, pad=0.05)
-    ax_3.title.set_text("pred")
+    ax_3.title.set_text("pred[ws] (Δ 24h)")
 
     ax_4 = fig.add_subplot(144)
-    plot4 = ax_4.imshow(output - target, cmap="RdBu", vmin=-max_bias, vmax=max_bias)
+    plot4 = ax_4.imshow(output - target, cmap="coolwarm", vmin=-max_bias, vmax=max_bias)
     plt.colorbar(plot4, ax=ax_4, fraction=0.05, pad=0.05)
-    ax_4.title.set_text("bias")
+    ax_4.title.set_text("bias[ws]")
 
     plt.tight_layout()
     plt.savefig(fname=os.path.join(path, "{}_power".format(step)))
@@ -256,48 +256,48 @@ def visuailze_all(
     fig = plt.figure(figsize=(12, 4))
 
     ax_1 = fig.add_subplot(241)
-    plot_1 = ax_1.imshow(input_ws, cmap="RdBu")
+    plot_1 = ax_1.imshow(input_ws, cmap="coolwarm")
     plt.colorbar(plot_1, ax=ax_1, fraction=0.05, pad=0.05)
-    ax_1.title.set_text("input[wind speed]")
+    ax_1.title.set_text("input[ws]")
 
     ax_2 = fig.add_subplot(242)
-    plot_2 = ax_2.imshow(target_ws, cmap="RdBu")
+    plot_2 = ax_2.imshow(target_ws, cmap="coolwarm")
     plt.colorbar(plot_2, ax=ax_2, fraction=0.05, pad=0.05)
-    ax_2.title.set_text("gt wind speed")
+    ax_2.title.set_text("gt[ws] (Δ 24h)")
 
     ax_3 = fig.add_subplot(243)
-    plot_3 = ax_3.imshow(output_ws, cmap="RdBu")
+    plot_3 = ax_3.imshow(output_ws, cmap="coolwarm")
     plt.colorbar(plot_3, ax=ax_3, fraction=0.05, pad=0.05)
-    ax_3.title.set_text("pred wind speed")
+    ax_3.title.set_text("pred[ws] (Δ 24h)")
 
     ax_4 = fig.add_subplot(244)
     plot_4 = ax_4.imshow(
-        output_ws - target_ws, cmap="RdBu", vmin=-max_bias_ws, vmax=max_bias_ws
+        output_ws - target_ws, cmap="coolwarm", vmin=-max_bias_ws, vmax=max_bias_ws
     )
     plt.colorbar(plot_4, ax=ax_4, fraction=0.05, pad=0.05)
-    ax_4.title.set_text("bias wind speed")
+    ax_4.title.set_text("bias[ws]")
 
     ax_6 = fig.add_subplot(246)
-    plot_6 = ax_6.imshow(target_power, cmap="RdBu")
+    plot_6 = ax_6.imshow(target_power, cmap="coolwarm")
     plt.colorbar(plot_6, ax=ax_6, fraction=0.05, pad=0.05)
-    ax_6.title.set_text("gt power")
+    ax_6.title.set_text("gt[power]")
 
     ax_7 = fig.add_subplot(247)
     plot_7 = ax_7.imshow(
-        output_power, cmap="RdBu"
+        output_power, cmap="coolwarm"
     )  # , levels = levels, extend = 'min')
     plt.colorbar(plot_7, ax=ax_7, fraction=0.05, pad=0.05)
-    ax_7.title.set_text("pred power")
+    ax_7.title.set_text("pred[power] (Δ 24h)")
 
     ax_8 = fig.add_subplot(248)
     plot_8 = ax_8.imshow(
         output_power - target_power,
-        cmap="RdBu",
+        cmap="coolwarm",
         vmin=-max_bias_power,
         vmax=max_bias_power,
     )
     plt.colorbar(plot_8, ax=ax_8, fraction=0.05, pad=0.05)
-    ax_8.title.set_text("bias power")
+    ax_8.title.set_text("bias[power]")
 
     plt.tight_layout()
     plt.savefig(fname=os.path.join(path, "{}_power".format(step)))
