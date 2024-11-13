@@ -39,11 +39,11 @@ def _setup_lora(model):
             target_modules.append(n)
             print(f"appended {n}")
     config = LoraConfig(
-        r=16,
-        lora_alpha=16,
-        target_modules=target_modules,
-        lora_dropout=0.1,
-        modules_to_save=["_output_power_layer"],
+        r=cfg.LORA.R,
+        lora_alpha=cfg.LORA.LORA_ALPHA,
+        target_modules=cfg.LORA.TARGET_MODULES,
+        lora_dropout=cfg.LORA.LORA_DROPOUT,
+        modules_to_save=cfg.LORA.MODULES_TO_SAVE,
     )
 
     # module_copy = copy.deepcopy(model)  # we keep a copy of the original model for later
@@ -310,7 +310,7 @@ if __name__ == "__main__":
     print(f"World size: {world_size}")
 
     if args.dist and torch.cuda.is_available():
-        mp.spawn(main, args=(args, world_size), nprocs=world_size) # type: ignore
+        mp.spawn(main, args=(args, world_size), nprocs=world_size)  # type: ignore
     else:
         main(0, args, 1)
     test_best_model(args)

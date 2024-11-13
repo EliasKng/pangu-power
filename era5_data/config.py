@@ -119,4 +119,12 @@ __C.POWER.CHECKPOINT = "/home/hk-project-test-mlperf/om1434/masterarbeit/wind_fu
 # - PanguPowerConv: Adds convolutional layers to the output of pangu to use pangus output to predict power
 # - PanguPowerConvSigmoid: Same as PanguPowerConv but with a sigmoid activation function at the end
 __C.POWER.MODEL_TYPE = "PanguPowerPatchRecovery"
-__C.POWER.LORA = True # Whether to use LORA
+
+__C.POWER.LORA = True  # Whether to use LORA
+
+__C.LORA = ConfigNamespace()
+__C.LORA.R = 16
+__C.LORA.LORA_ALPHA = 16
+__C.LORA.TARGET_MODULES = ["target_modules"]  # Replace with actual target modules
+__C.LORA.LORA_DROPOUT = 0.1
+__C.LORA.MODULES_TO_SAVE = ["_output_power_layer"]
