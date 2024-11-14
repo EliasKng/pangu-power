@@ -41,7 +41,7 @@ def _setup_lora(model):
     config = LoraConfig(
         r=cfg.LORA.R,
         lora_alpha=cfg.LORA.LORA_ALPHA,
-        target_modules=cfg.LORA.TARGET_MODULES,
+        target_modules=target_modules,
         lora_dropout=cfg.LORA.LORA_DROPOUT,
         modules_to_save=cfg.LORA.MODULES_TO_SAVE,
     )
