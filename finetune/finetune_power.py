@@ -342,14 +342,12 @@ if __name__ == "__main__":
     parser.add_argument("--dist", action="store_true", help="Enable distributed mode")
 
     args = parser.parse_args()
-
-    print(f"GPU list: {args.gpu_list} ", type(args.gpu_list))
-
     _assert_gpu_list(args.gpu_list, args.dist)
-    world_size = len(args.gpu_list)
 
+    world_size = len(args.gpu_list)
     print(f"World size: {world_size if args.dist else 1}")
 
+    # Spawn processes for distributed training
     if args.dist and torch.cuda.is_available():
         mp.spawn(main, args=(args, world_size), nprocs=world_size)  # type: ignore
     else:
