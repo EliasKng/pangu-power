@@ -6,6 +6,7 @@ sys.path.append("/hkfs/home/project/hk-project-test-mlperf/om1434/masterarbeit")
 from wind_fusion import energy_dataset
 from era5_data import utils
 from era5_data.config import cfg
+from typing import List
 import torch
 from torch.optim.adam import Adam
 from torch.utils.data.distributed import DistributedSampler
@@ -32,6 +33,9 @@ Finetune pangu_power on the energy dataset
 
 
 def _setup_lora(model):
+    """
+    Sets up LoRA for the model
+    """
     print([(n, type(m)) for n, m in model.named_modules()])
     target_modules = []
     for n, m in model.named_modules():
@@ -100,17 +104,18 @@ def _initialize_model_with_pangu_weights(
     return model
 
 
-def ddp_setup(rank, world_size):
+def ddp_setup(rank: int, world_size: int, gpu_list: List[int]) -> None:
     """Initializes the process group and sets the device for DDP
 
     Parameters
     ----------
         rank: Unique identifier of each process
         world_size: Total number of processes
+        gpu_list: List of GPUs to use
     """
     os.environ["MASTER_ADDR"] = os.environ["HOSTNAME"]
     os.environ["MASTER_PORT"] = "12357"
-    torch.cuda.set_device(rank)
+    torch.cuda.set_device(gpu_list[rank])
     init_process_group(backend="nccl", rank=rank, world_size=world_size)
 
 
@@ -122,6 +127,9 @@ def create_dataloader(
     shuffle: bool,
     distributed: bool = False,
 ) -> data.DataLoader:
+    """
+    Creates a DataLoader for the energy dataset. If distributed is set to True, the DataLoader will be created with a DistributedSampler.
+    """
     dataset = energy_dataset.EnergyDataset(
         filepath_era5=cfg.ERA5_PATH,
         filepath_power=cfg.POWER_PATH,
@@ -184,14 +192,36 @@ def setup_logger(type_net: str, horizon: int, output_path: str) -> logging.Logge
     return logger
 
 
-def _get_device(rank: int) -> torch.device:
+def _get_device(rank: int, gpu_list: List[int]) -> torch.device:
+    """
+    Get the appropriate device (GPU or CPU) for the given rank.
+    This function checks if CUDA is available and returns the corresponding
+    GPU device based on the provided rank and GPU list. If CUDA is not available,
+    it defaults to returning the CPU device.
+    """
+
     if torch.cuda.is_available():
-        return torch.device(f"cuda:{rank}")
+        return torch.device(f"cuda:{gpu_list[rank]}")
     return torch.device("cpu")
 
 
+def _assert_gpu_list(gpu_list: List[int], dist: bool) -> None:
+    """
+    Asserts that the provided GPU list is valid based on the distributed training setting.
+    """
+    assert len(gpu_list) > 0, "Please specify at least one GPU"
+    if dist:
+        assert (
+            len(gpu_list) > 1
+        ), "When distributed training is enabled, please specify at least two GPUs."
+    else:
+        assert (
+            len(gpu_list) == 1
+        ), "When distributed training is disabled, please specify exactly one GPU. If you want to use CPU, don't specify any GPU."
+
+
 def main(rank: int, args: argparse.Namespace, world_size: int) -> None:
-    ddp_setup(rank, world_size)
+    ddp_setup(rank, world_size, args.gpu_list)
 
     print(f"Rank: {rank}, World Size: {world_size}")
 
@@ -201,7 +231,7 @@ def main(rank: int, args: argparse.Namespace, world_size: int) -> None:
     writer = setup_writer(output_path)
     logger = setup_logger(args.type_net, cfg.PG.HORIZON, output_path)
 
-    device = _get_device(rank)
+    device = _get_device(rank, args.gpu_list)
 
     if rank == 0:
         logger.info(f"Start finetuning {args.type_net} on energy dataset")
@@ -272,7 +302,7 @@ def test_best_model(args):
     utils.mkdirs(output_path)
     logger = setup_logger(args.type_net, cfg.PG.HORIZON, output_path)
     logger.info("Begin testing...")
-    device = _get_device(0)
+    device = _get_device(0, args.gpu_list)
 
     best_model = torch.load(
         os.path.join(output_path, "models/best_model.pth"),
@@ -302,13 +332,22 @@ if __name__ == "__main__":
     parser.add_argument("--load_my_best", type=bool, default=True)
     parser.add_argument("--launcher", default="pytorch", help="job launcher")
     parser.add_argument("--local-rank", type=int, default=0)
-    parser.add_argument("--dist", default=False)
+    parser.add_argument(
+        "--gpu_list",
+        type=int,
+        nargs="+",
+        default=[0],
+        help="List of GPUs to use for finetuning",
+    )
+    parser.add_argument("--dist", action="store_true", help="Enable distributed mode")
+
     args = parser.parse_args()
+    _assert_gpu_list(args.gpu_list, args.dist)
 
-    world_size = torch.cuda.device_count()
+    world_size = len(args.gpu_list)
+    print(f"World size: {world_size if args.dist else 1}")
 
-    print(f"World size: {world_size}")
-
+    # Spawn processes for distributed training
     if args.dist and torch.cuda.is_available():
         mp.spawn(main, args=(args, world_size), nprocs=world_size)  # type: ignore
     else:
