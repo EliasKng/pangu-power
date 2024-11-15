@@ -114,7 +114,7 @@ def ddp_setup(rank: int, world_size: int, gpu_list: List[int]) -> None:
         gpu_list: List of GPUs to use
     """
     os.environ["MASTER_ADDR"] = os.environ["HOSTNAME"]
-    os.environ["MASTER_PORT"] = "12357"
+    os.environ["MASTER_PORT"] = "12358"
     torch.cuda.set_device(gpu_list[rank])
     init_process_group(backend="nccl", rank=rank, world_size=world_size)
 
@@ -328,7 +328,7 @@ def test_best_model(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--type_net", type=str, default="PatchRecovery_LoRA_Dist_Test3")
+    parser.add_argument("--type_net", type=str, default="PatchRecovery_LoRA_Dist_Test4")
     parser.add_argument("--load_my_best", type=bool, default=True)
     parser.add_argument("--launcher", default="pytorch", help="job launcher")
     parser.add_argument("--local-rank", type=int, default=0)

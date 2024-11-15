@@ -113,7 +113,7 @@ __C.PG.BENCHMARK.PRETRAIN_24_torch = os.path.join(
 __C.POWER = ConfigNamespace()
 
 # Specifies if the model should be trained from scratch (pretrained pangu weights will be used) or if a checkpoint should be used.
-__C.POWER.USE_CHECKPOINT = False
+__C.POWER.USE_CHECKPOINT = True
 # If POWER.USE_CHECKPOINT == True: Select the checkpoint to start the training from. The model is loaded from the checkpoint.
 __C.POWER.CHECKPOINT = "/home/hk-project-test-mlperf/om1434/masterarbeit/wind_fusion/pangu_pytorch/result/PatchRecovery_LoRA_Dist_Test2/24/models/best_model.pth"
 # If POWER.USE_CHECKPOINT == False: Specify the type of model to be initialized w/ pangu weights
