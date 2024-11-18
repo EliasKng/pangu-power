@@ -66,6 +66,9 @@ def load_model(device: torch.device) -> torch.nn.Module:
             map_location=device,
             weights_only=False,
         )
+
+        # TODO(EliasKng): Fix error: Set device for all layers or load weights into new model instance
+
         return model
 
     # We start our training from pretrained pangu weights
