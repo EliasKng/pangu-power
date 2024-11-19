@@ -186,6 +186,12 @@ class PanguPowerConv(PanguModel):
         # Return output_surface for visualization purposes only
         return output_power, output_surface
 
+    def load_pangu_state_dict(self, device: torch.device) -> None:
+        checkpoint = torch.load(
+            cfg.PG.BENCHMARK.PRETRAIN_24_torch, map_location=device, weights_only=False
+        )
+        self.load_state_dict(checkpoint["model"], strict=False)
+
 
 class PanguPowerConvSigmoid(PanguPowerConv):
     """Same as PanguPowerConv but with a sigmoid activation function at the end"""

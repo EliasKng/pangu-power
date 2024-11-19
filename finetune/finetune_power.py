@@ -32,16 +32,23 @@ Finetune pangu_power on the energy dataset
 """
 
 
-def _setup_lora(model):
+def _setup_lora(model) -> torch.nn.Module:
     """
     Sets up LoRA for the model
+
+    Args:
+        model: The model to set up LoRA for.
+
+    Returns:
+        torch.nn.Module: The model with LoRA setup.
     """
-    print([(n, type(m)) for n, m in model.named_modules()])
+
+    # Get all linear layers in the model. They will be tuned by LoRA.
     target_modules = []
     for n, m in model.named_modules():
         if isinstance(m, nn.Linear):
             target_modules.append(n)
-            print(f"appended {n}")
+
     config = LoraConfig(
         r=cfg.LORA.R,
         lora_alpha=cfg.LORA.LORA_ALPHA,
@@ -50,8 +57,6 @@ def _setup_lora(model):
         modules_to_save=cfg.LORA.MODULES_TO_SAVE,
     )
 
-    # module_copy = copy.deepcopy(model)  # we keep a copy of the original model for later
-
     peft_model = get_peft_model(model, config)
     return peft_model
 
@@ -59,50 +64,51 @@ def _setup_lora(model):
 def load_model(device: torch.device) -> torch.nn.Module:
     """Loads the model specified in the config file"""
 
-    # We start our training from a specific checkpoint
-    if cfg.POWER.USE_CHECKPOINT:
-        model = torch.load(
-            cfg.POWER.CHECKPOINT,
-            map_location=device,
-            weights_only=False,
-        )
+    model_type = cfg.POWER.MODEL_TYPE
+    req_grad_layers = []
 
-        # TODO(EliasKng): Fix error: Set device for all layers or load weights into new model instance
-
-        return model
-
-    # We start our training from pretrained pangu weights
-    return _initialize_model_with_pangu_weights(cfg.POWER.MODEL_TYPE, device)
-
-
-def _initialize_model_with_pangu_weights(
-    model_type: str, device: torch.device
-) -> torch.nn.Module:
-    """Initializes the specified model and loads pretrained pangu weights"""
+    # Select correct model
     if model_type == "PanguPowerPatchRecovery":
         model = PanguPowerPatchRecovery(device=device).to(device)
-        model.load_pangu_state_dict(device)
         # Only finetune the last layer
-        set_requires_grad(model, "_output_power_layer")
+        req_grad_layers = ["_output_power_layer"]
 
     elif model_type == "PanguPowerConv":
         model = PanguPowerConv(device=device).to(device)
-        checkpoint = torch.load(
-            cfg.PG.BENCHMARK.PRETRAIN_24_torch, map_location=device, weights_only=False
-        )
-        model.load_state_dict(checkpoint["model"], strict=False)
-        set_requires_grad(model, "_conv_power_layers")
+        # Only finetune the last layer
+        req_grad_layers = ["_conv_power_layers"]
 
     elif model_type == "PanguPowerConvSigmoid":
         model = PanguPowerConvSigmoid(device=device).to(device)
-        checkpoint = torch.load(
-            cfg.PG.BENCHMARK.PRETRAIN_24_torch, map_location=device, weights_only=False
-        )
-        model.load_state_dict(checkpoint["model"], strict=False)
-        set_requires_grad(model, "_conv_power_layers")
+        # Only finetune the last layer
+        req_grad_layers = ["_conv_power_layers"]
 
     else:
         raise ValueError("Model not found")
+
+    # Load specified checkpoint
+    if cfg.POWER.USE_CHECKPOINT:
+        checkpoint = torch.load(
+            cfg.POWER.CHECKPOINT, map_location=device, weights_only=False
+        )
+
+        # Setups LoRA if specified, so that the key names will match. Make sure that checkpoint is also using LoRA in that case
+        if cfg.POWER.LORA:
+            model = _setup_lora(model)
+
+        model.load_state_dict(checkpoint["model"], strict=True)
+
+    # Initialize model w/ pangu weights
+    else:
+        model.load_pangu_state_dict(device)
+
+    # Set requires_grad to True for the specified layers
+    for layer in req_grad_layers:
+        set_requires_grad(model, layer)
+
+        # Prepare LoRA if specified
+        if cfg.POWER.LORA:
+            model = _setup_lora(model)
 
     return model
 
@@ -256,10 +262,6 @@ def main(rank: int, args: argparse.Namespace, world_size: int) -> None:
     )
 
     model = load_model(device)
-
-    if cfg.POWER.LORA:
-        model = _setup_lora(model)
-
     model = DDP(model, device_ids=[device], find_unused_parameters=True)
 
     # If static graph is not set, LoRA returns errors.
