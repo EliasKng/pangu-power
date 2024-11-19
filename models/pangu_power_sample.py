@@ -158,6 +158,10 @@ def train(
                 i,
             )
 
+            # Set best loss
+            if val_loss < best_loss:
+                best_loss = val_loss
+
             # Set early stop flag
             if rank == 0 and epochs_since_last_improvement >= 5:
                 logger.info(
