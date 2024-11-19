@@ -143,6 +143,8 @@ def train(
         if i % cfg.PG.VAL.INTERVAL == 0:
             val_loss, best_model, epochs_since_last_improvement = validate(
                 model,
+                optimizer,
+                lr_scheduler,
                 val_loader,
                 criterion,
                 aux_constants,
@@ -233,6 +235,7 @@ def save_model_checkpoint(
     lr_scheduler: torch.optim.lr_scheduler.MultiStepLR,
     res_path: str,
     epoch: int,
+    is_best: bool = False,
 ) -> None:
     model_save_path = os.path.join(res_path, "models")
     utils.mkdirs(model_save_path)
@@ -242,12 +245,19 @@ def save_model_checkpoint(
         "lr_scheduler": lr_scheduler.state_dict(),
         "epoch": epoch,
     }
-    torch.save(save_file, os.path.join(model_save_path, "train_{}.pth".format(epoch)))
+    # Use different file name for best model so the last one will be overwritten
+    if is_best:
+        file_name = "best_checkpoint.pth"
+    else:
+        file_name = "train_{}.pth".format(epoch)
+    torch.save(save_file, os.path.join(model_save_path, file_name))
     print("Model saved at epoch {}".format(epoch))
 
 
 def validate(
     model: nn.Module,
+    optimizer: torch.optim.Optimizer,
+    lr_scheduler: torch.optim.lr_scheduler.MultiStepLR,
     val_loader: torch.utils.data.DataLoader,
     criterion: nn.Module,
     aux_constants: Dict[str, torch.Tensor],
@@ -309,9 +319,13 @@ def validate(
         if val_loss < best_loss:
             best_loss = val_loss
             best_model = copy.deepcopy(model.module)
+            # Save both a deepcopy and statedict of the best model (deepcopy is for testing, statedict for re-using model)
             if rank == 0:
                 torch.save(
                     best_model, os.path.join(res_path, "models", "best_model.pth")
+                )
+                save_model_checkpoint(
+                    model, optimizer, lr_scheduler, res_path, epoch, is_best=True
                 )
                 logger.info(
                     f"New best model saved at epoch {epoch} with validation loss: {val_loss:.4f}"
