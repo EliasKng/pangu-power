@@ -32,7 +32,7 @@ Finetune pangu_power on the energy dataset
 """
 
 
-def _setup_lora(model) -> torch.nn.Module:
+def _setup_lora(model, modules_to_save) -> torch.nn.Module:
     """
     Sets up LoRA for the model
 
@@ -54,7 +54,7 @@ def _setup_lora(model) -> torch.nn.Module:
         lora_alpha=cfg.LORA.LORA_ALPHA,
         target_modules=target_modules,
         lora_dropout=cfg.LORA.LORA_DROPOUT,
-        modules_to_save=cfg.LORA.MODULES_TO_SAVE,
+        modules_to_save=modules_to_save,
     )
 
     peft_model = get_peft_model(model, config)
@@ -94,7 +94,7 @@ def load_model(device: torch.device) -> torch.nn.Module:
 
         # Setups LoRA if specified, so that the key names will match. Make sure that checkpoint is also using LoRA in that case
         if cfg.POWER.LORA:
-            model = _setup_lora(model)
+            model = _setup_lora(model, req_grad_layers)
 
         model.load_state_dict(checkpoint["model"], strict=True)
 
@@ -108,7 +108,7 @@ def load_model(device: torch.device) -> torch.nn.Module:
 
         # Prepare LoRA if specified
         if cfg.POWER.LORA:
-            model = _setup_lora(model)
+            model = _setup_lora(model, req_grad_layers)
 
     return model
 
