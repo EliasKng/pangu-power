@@ -63,7 +63,7 @@ def _setup_lora(model, modules_to_save) -> torch.nn.Module:
 
 
 def load_model(device: torch.device) -> torch.nn.Module:
-    """Loads the model specified in the config file"""
+    """Loads the model specified in the config file. Will also wrap model w/ LoRA if set in config."""
 
     model_type = cfg.POWER.MODEL_TYPE
     req_grad_layers = []
@@ -267,7 +267,7 @@ def main(
     )
 
     model = load_model(device)
-    model = DDP(model, device_ids=[device], find_unused_parameters=True)
+    model = DDP(model, device_ids=[device])
 
     # If static graph is not set, LoRA returns errors.
     if cfg.POWER.LORA:
@@ -338,7 +338,7 @@ def test_best_model(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--type_net", type=str, default="PatchRecovery_LoRA_Dist_Test6")
+    parser.add_argument("--type_net", type=str, default="PatchRecovery_LoRA_Dist_Test7")
     parser.add_argument("--load_my_best", type=bool, default=True)
     parser.add_argument("--launcher", default="pytorch", help="job launcher")
     parser.add_argument("--local-rank", type=int, default=0)
