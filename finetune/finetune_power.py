@@ -15,6 +15,7 @@ import torch.multiprocessing as mp
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch import nn
 import os
+from random import randrange
 from torch.utils import data
 from models.pangu_power_sample import test, train
 from models.pangu_power import (
@@ -113,7 +114,9 @@ def load_model(device: torch.device) -> torch.nn.Module:
     return model
 
 
-def ddp_setup(rank: int, world_size: int, gpu_list: List[int]) -> None:
+def ddp_setup(
+    rank: int, world_size: int, master_port: str, gpu_list: List[int]
+) -> None:
     """Initializes the process group and sets the device for DDP
 
     Parameters
@@ -123,7 +126,7 @@ def ddp_setup(rank: int, world_size: int, gpu_list: List[int]) -> None:
         gpu_list: List of GPUs to use
     """
     os.environ["MASTER_ADDR"] = os.environ["HOSTNAME"]
-    os.environ["MASTER_PORT"] = "12358"
+    os.environ["MASTER_PORT"] = master_port
     torch.cuda.set_device(gpu_list[rank])
     init_process_group(backend="nccl", rank=rank, world_size=world_size)
 
@@ -229,8 +232,10 @@ def _assert_gpu_list(gpu_list: List[int], dist: bool) -> None:
         ), "When distributed training is disabled, please specify exactly one GPU. If you want to use CPU, don't specify any GPU."
 
 
-def main(rank: int, args: argparse.Namespace, world_size: int) -> None:
-    ddp_setup(rank, world_size, args.gpu_list)
+def main(
+    rank: int, args: argparse.Namespace, world_size: int, master_port: str
+) -> None:
+    ddp_setup(rank, world_size, master_port, args.gpu_list)
 
     print(f"Rank: {rank}, World Size: {world_size}")
 
@@ -333,7 +338,7 @@ def test_best_model(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--type_net", type=str, default="PatchRecovery_LoRA_Dist_Test5")
+    parser.add_argument("--type_net", type=str, default="PatchRecovery_LoRA_Dist_Test6")
     parser.add_argument("--load_my_best", type=bool, default=True)
     parser.add_argument("--launcher", default="pytorch", help="job launcher")
     parser.add_argument("--local-rank", type=int, default=0)
@@ -352,9 +357,12 @@ if __name__ == "__main__":
     world_size = len(args.gpu_list)
     print(f"World size: {world_size if args.dist else 1}")
 
+    master_port = str(12357 + randrange(-10, 10, 1))
+    print(f"Master port: {master_port}")
+
     # Spawn processes for distributed training
     if args.dist and torch.cuda.is_available():
-        mp.spawn(main, args=(args, world_size), nprocs=world_size)  # type: ignore
+        mp.spawn(main, args=(args, world_size, master_port), nprocs=world_size)  # type: ignore
     else:
-        main(0, args, 1)
+        main(0, args, 1, master_port)
     test_best_model(args)
