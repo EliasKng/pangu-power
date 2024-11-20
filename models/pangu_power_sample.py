@@ -321,11 +321,11 @@ def validate(
             best_model = copy.deepcopy(model.module)
             # Save both a deepcopy and statedict of the best model (deepcopy is for testing, statedict for re-using model)
             if rank == 0:
-                torch.save(
-                    best_model, os.path.join(res_path, "models", "best_model.pth")
-                )
                 save_model_checkpoint(
                     model, optimizer, lr_scheduler, res_path, epoch, is_best=True
+                )
+                torch.save(
+                    best_model, os.path.join(res_path, "models", "best_model.pth")
                 )
                 logger.info(
                     f"New best model saved at epoch {epoch} with validation loss: {val_loss:.4f}"
