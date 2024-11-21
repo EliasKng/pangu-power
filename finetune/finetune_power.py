@@ -17,7 +17,8 @@ from torch import nn
 import os
 from random import randrange
 from torch.utils import data
-from wind_fusion.pangu_pytorch.models.train_power import test, train
+from wind_fusion.pangu_pytorch.models.train_power import train
+from wind_fusion.pangu_pytorch.models.test_power import test
 from models.pangu_power import (
     PanguPowerPatchRecovery,
     PanguPowerConvSigmoid,
