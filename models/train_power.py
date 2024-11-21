@@ -22,10 +22,6 @@ warnings.filterwarnings(
 )
 
 
-def load_constants(device):
-    return utils_data.loadAllConstants(device=device)
-
-
 def load_land_sea_mask(device, mask_type="sea", fill_value=0):
     return utils_data.loadLandSeaMask(
         device, mask_type=mask_type, fill_value=fill_value
@@ -109,7 +105,7 @@ def train(
     best_loss = float("inf")
     epochs_since_last_improvement = 0
     best_model = model
-    aux_constants = load_constants(device)
+    aux_constants = utils_data.loadAllConstants(device=device)
 
     # Termination flag to signal early stopping
     early_stop_flag = torch.tensor(

@@ -3,11 +3,11 @@ from datetime import datetime
 import warnings
 from era5_data import utils
 from wind_fusion.pangu_pytorch.models.train_power import (
-    load_constants,
     model_inference,
     load_land_sea_mask,
     visualize,
 )
+from era5_data import utils_data
 
 
 warnings.filterwarnings(
@@ -22,7 +22,7 @@ warnings.filterwarnings(
 
 
 def test(test_loader, model, device, res_path):
-    aux_constants = load_constants(device)
+    aux_constants = utils_data.loadAllConstants(device=device)
     for id, data in enumerate(test_loader, 0):
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         print(f"[{timestamp}] predict on {id}")
