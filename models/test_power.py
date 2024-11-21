@@ -23,6 +23,7 @@ warnings.filterwarnings(
 
 def test(test_loader, model, device, res_path):
     rmse_power = dict()
+    mape_power = dict()
     acc_power = dict()
 
     aux_constants = utils_data.loadAllConstants(device=device)
@@ -80,6 +81,11 @@ def test(test_loader, model, device, res_path):
             (score.rmse(output_power_test, target_power_test)).detach().cpu().numpy()
         )
 
+        # Mean absolute percentage error (MAPE)
+        rmse_power[target_time] = (
+            (score.mape(output_power_test, target_power_test)).detach().cpu().numpy()
+        )
+
         # ACC
         # TODO(EliasKng): Calculate annomaly for output and target first: output - mean
         acc_power[target_time] = (
@@ -90,13 +96,17 @@ def test(test_loader, model, device, res_path):
         )
 
     # Save scores to csv
-    # Save rmses to csv
     csv_path = os.path.join(res_path, "csv")
     utils.mkdirs(csv_path)
     utils.save_error_power(
         csv_path,
         rmse_power,
         "rmse",
+    )
+    utils.save_error_power(
+        csv_path,
+        mape_power,
+        "mape",
     )
     utils.save_error_power(
         csv_path,

@@ -72,11 +72,42 @@ def weighted_acc_masked(pred, target, weighted=True, maskarray=1):
 
 
 def rmse(pred: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-    """Calculates RMSE between pred and target (torch tensors)"""
+    """
+    Calculates RMSE between pred and target (torch tensors) ignoring NaN values.
+    Args:
+        output (torch.Tensor): The predicted values.
+        target (torch.Tensor): The ground truth values.
+
+    Returns:
+        torch.Tensor: The RMSE value as a scalar tensor.
+    """
     # Ignore NaNs (becuause of land-sea mask)
     mask = ~torch.isnan(pred) & ~torch.isnan(target)
     mse = torch.mean((pred[mask] - target[mask]) ** 2)
     return torch.sqrt(mse)
+
+
+def mape(pred: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+    """
+    Computes the Mean Absolute Percentage Error (MAPE) between predicted and target tensors,
+    ignoring NaN values.
+
+    Args:
+        output (torch.Tensor): The predicted values.
+        target (torch.Tensor): The ground truth values.
+
+    Returns:
+        torch.Tensor: The MAPE value as a scalar tensor.
+    """
+    # Avoid division by zero by adding a small constant to the denominator
+    epsilon = 1e-8
+
+    mask = ~torch.isnan(pred) & ~torch.isnan(target)
+    mape = (
+        torch.mean(torch.abs((pred[mask] - target[mask]) / (target[mask] + epsilon)))
+        * 100
+    )
+    return mape
 
 
 def weighted_rmse(pred, target):
