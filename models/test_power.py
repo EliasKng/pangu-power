@@ -23,7 +23,7 @@ warnings.filterwarnings(
 
 def test(test_loader, model, device, res_path):
     rmse_power = dict()
-    # acc_power = dict()
+    acc_power = dict()
 
     aux_constants = utils_data.loadAllConstants(device=device)
 
@@ -72,9 +72,34 @@ def test(test_loader, model, device, res_path):
         )
 
         # Compute test scores
-        # RMSE
         output_power_test = output_power_test.squeeze()
         target_power_test = target_power_test.squeeze()
 
-        rmse_power[target_time] = score.rmse(output_power_test, target_power_test)
-        # TODO(EliasKng): Implement score calculation
+        # RMSE
+        rmse_power[target_time] = (
+            (score.rmse(output_power_test, target_power_test)).detach().cpu().numpy()
+        )
+
+        # ACC
+        # TODO(EliasKng): Calculate annomaly for output and target first: output - mean
+        acc_power[target_time] = (
+            (score.weighted_acc(output_power_test, target_power_test, weighted=False))
+            .detach()
+            .cpu()
+            .numpy()
+        )
+
+    # Save scores to csv
+    # Save rmses to csv
+    csv_path = os.path.join(res_path, "csv")
+    utils.mkdirs(csv_path)
+    utils.save_error_power(
+        csv_path,
+        rmse_power,
+        "rmse",
+    )
+    utils.save_error_power(
+        csv_path,
+        acc_power,
+        "acc",
+    )

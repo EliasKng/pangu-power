@@ -412,6 +412,13 @@ def save_errorScores(csv_path, z, q, t, u, v, surface, error):
     score_surface.to_csv("{}/{}.csv".format(csv_path, f"{error}_surface"))
 
 
+def save_error_power(csv_path, power_scores, error):
+    score_power = pd.DataFrame.from_dict(
+        power_scores, orient="index", columns=["power"]
+    )
+    score_power.to_csv("{}/{}.csv".format(csv_path, f"{error}_power"))
+
+
 def prepare_europe(data: torch.Tensor) -> torch.Tensor:
     """Cut out Europe area from the data and replace land area with NaN."""
     lsm = utils_data.loadLandSeaMask(
