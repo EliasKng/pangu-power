@@ -58,7 +58,7 @@ __C.PG.USE_LSM = True
 
 __C.PG.TRAIN = ConfigNamespace()
 __C.PG.TRAIN.EPOCHS = 100
-__C.PG.TRAIN.LR = 1e-3  # 5e-6  # 5e-4
+__C.PG.TRAIN.LR = 1e-4  # 5e-6  # 5e-4
 __C.PG.TRAIN.WEIGHT_DECAY = 1e-4  # 3e-6
 __C.PG.TRAIN.START_TIME = "20160101"
 __C.PG.TRAIN.END_TIME = "20161231"
@@ -127,5 +127,5 @@ __C.POWER.LORA = True  # Whether to use LORA. If POWER.USE_CHECKPOINT == True, t
 
 __C.LORA = ConfigNamespace()
 __C.LORA.R = 4
-__C.LORA.LORA_ALPHA = 16
-__C.LORA.LORA_DROPOUT = 0.9
+__C.LORA.LORA_ALPHA = 8
+__C.LORA.LORA_DROPOUT = 0.3
