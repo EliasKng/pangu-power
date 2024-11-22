@@ -1,13 +1,13 @@
 import os
 from datetime import datetime
 import warnings
-from era5_data import utils
+from era5_data import utils, utils_data
 from wind_fusion.pangu_pytorch.models.train_power import (
     model_inference,
     load_land_sea_mask,
     visualize,
 )
-from era5_data import utils_data, score
+from era5_data import score
 
 
 warnings.filterwarnings(
@@ -24,7 +24,7 @@ warnings.filterwarnings(
 def test(test_loader, model, device, res_path):
     rmse_power = dict()
     mape_power = dict()
-    # acc_power = dict()
+    acc_power = dict()
 
     aux_constants = utils_data.loadAllConstants(device=device)
 
@@ -95,10 +95,33 @@ def test(test_loader, model, device, res_path):
         )
 
         # ACC
-        # TODO(EliasKng): Calculate annomaly for output and target first: output - mean, then mask it (lsm)
-        # acc_power[target_time] = (
-        #     (score.weighted_acc(output_power_test.detach().cpu(), target_power_test.detach().cpu(), weighted=False))
-        # )
+        mean_power_per_grid_point = utils_data.loadMeanPower(output_power_test.device)
+
+        # Calculate power anomalies
+        output_power_anomaly = output_power_test - mean_power_per_grid_point
+        target_power_anomaly = target_power_test - mean_power_per_grid_point
+
+        # Mask anomalies
+        output_power_anomaly_masked = output_power_anomaly.squeeze(0)[
+            lsm_expanded.squeeze() == 1
+        ]
+        target_power_anomaly_masked = target_power_anomaly.squeeze(0)[
+            lsm_expanded.squeeze() == 1
+        ]
+
+        # Calculate ACC
+        acc_power[target_time] = (
+            (
+                score.weighted_acc(
+                    output_power_anomaly_masked.detach().cpu(),
+                    target_power_anomaly_masked.detach().cpu(),
+                    weighted=False,
+                )
+            )
+            .detach()
+            .cpu()
+            .numpy()
+        )
 
     # Save scores to csv
     csv_path = os.path.join(res_path, "csv")
@@ -113,8 +136,8 @@ def test(test_loader, model, device, res_path):
         mape_power,
         "mape",
     )
-    # utils.save_error_power(
-    #     csv_path,
-    #     acc_power,
-    #     "acc",
-    # )
+    utils.save_error_power(
+        csv_path,
+        acc_power,
+        "acc",
+    )

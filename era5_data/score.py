@@ -32,7 +32,6 @@ def weighted_acc(pred_annomaly, target_annomaly, weighted=True):
         target_annomaly = np.expand_dims(target_annomaly, 0)
 
     weight = 1
-
     if weighted:
         num_lat = np.shape(pred_annomaly)[1]
         s = np.sum(np.cos(np.pi / 180 * lat_np(np.arange(0, num_lat), num_lat)))

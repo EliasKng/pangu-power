@@ -32,6 +32,8 @@ __C.POWER_PATH = (
 __C.LSM_PATH = (
     "/lsdf/kit/imk-tro/projects/Gruppe_Quinting/om1434/offshore/lsm_global.zarr"
 )
+# Mean Power path
+__C.MEAN_POWER_PATH = "/home/hk-project-test-mlperf/om1434/masterarbeit/wind_fusion/pangu_pytorch/data/aux_data/mean_power_per_grid_point.npy"
 
 __C.ERA5_UPPER_LEVELS = [
     "1000",
