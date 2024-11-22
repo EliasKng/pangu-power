@@ -98,7 +98,7 @@ def mape(pred: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
     """
     # Avoid division by zero by adding a small constant to the denominator
     epsilon = 1e-8
-    mape = torch.median(torch.abs((pred - target) / (target + epsilon))) * 100
+    mape = torch.mean(torch.abs((pred - target) / (target + epsilon))) * 100
     return mape
 
 
