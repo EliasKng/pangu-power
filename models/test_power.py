@@ -24,7 +24,7 @@ warnings.filterwarnings(
 def test(test_loader, model, device, res_path):
     rmse_power = dict()
     mape_power = dict()
-    acc_power = dict()
+    # acc_power = dict()
 
     aux_constants = utils_data.loadAllConstants(device=device)
 
@@ -53,9 +53,7 @@ def test(test_loader, model, device, res_path):
         )
 
         # Apply lsm
-        lsm_expanded = load_land_sea_mask(output_power_test.device)
-        print("Make sure LSM contains NAs and not 0s")
-        # TODO(EliasKng): Check if this is correct
+        lsm_expanded = load_land_sea_mask(output_power_test.device, fill_value=0)
         output_power_test = output_power_test * lsm_expanded
 
         # Visualize
@@ -76,24 +74,31 @@ def test(test_loader, model, device, res_path):
         output_power_test = output_power_test.squeeze()
         target_power_test = target_power_test.squeeze()
 
+        # Mask
+        output_power_test_masked = output_power_test[lsm_expanded.squeeze() == 1]
+        target_power_test_masked = target_power_test[lsm_expanded.squeeze() == 1]
+
         # RMSE
         rmse_power[target_time] = (
-            (score.rmse(output_power_test, target_power_test)).detach().cpu().numpy()
-        )
-
-        # Mean absolute percentage error (MAPE)
-        rmse_power[target_time] = (
-            (score.mape(output_power_test, target_power_test)).detach().cpu().numpy()
-        )
-
-        # ACC
-        # TODO(EliasKng): Calculate annomaly for output and target first: output - mean
-        acc_power[target_time] = (
-            (score.weighted_acc(output_power_test, target_power_test, weighted=False))
+            (score.rmse(output_power_test_masked, target_power_test_masked))
             .detach()
             .cpu()
             .numpy()
         )
+
+        # Mean absolute percentage error (MAPE)
+        mape_power[target_time] = (
+            (score.mape(output_power_test_masked, target_power_test_masked))
+            .detach()
+            .cpu()
+            .numpy()
+        )
+
+        # ACC
+        # TODO(EliasKng): Calculate annomaly for output and target first: output - mean, then mask it (lsm)
+        # acc_power[target_time] = (
+        #     (score.weighted_acc(output_power_test.detach().cpu(), target_power_test.detach().cpu(), weighted=False))
+        # )
 
     # Save scores to csv
     csv_path = os.path.join(res_path, "csv")
@@ -108,8 +113,8 @@ def test(test_loader, model, device, res_path):
         mape_power,
         "mape",
     )
-    utils.save_error_power(
-        csv_path,
-        acc_power,
-        "acc",
-    )
+    # utils.save_error_power(
+    #     csv_path,
+    #     acc_power,
+    #     "acc",
+    # )

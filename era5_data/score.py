@@ -24,25 +24,24 @@ def lat_np(j, num_lat):
     return 90 - j * 180 / (num_lat - 1)
 
 
-def weighted_acc(pred, target, weighted=True):
+def weighted_acc(pred_annomaly, target_annomaly, weighted=True):
     # takes in shape [1, num_lat, num_long]
-    if len(pred.shape) == 2:
-        pred = np.expand_dims(pred, 0)
-    if len(target.shape) == 2:
-        target = np.expand_dims(target, 0)
+    if len(pred_annomaly.shape) == 2:
+        pred_annomaly = np.expand_dims(pred_annomaly, 0)
+    if len(target_annomaly.shape) == 2:
+        target_annomaly = np.expand_dims(target_annomaly, 0)
 
-    num_lat = np.shape(pred)[1]
-    # num_long = np.shape(target)[2]
-    #    pred -= mean(pred)
-    #    target -= mean(target)
-    s = np.sum(np.cos(np.pi / 180 * lat_np(np.arange(0, num_lat), num_lat)))
-    weight = (
-        np.expand_dims(latitude_weighting_factor(np.arange(0, num_lat), num_lat, s), -1)
-        if weighted
-        else 1
-    )
-    r = (weight * pred * target).sum() / np.sqrt(
-        (weight * pred * pred).sum() * (weight * target * target).sum()
+    weight = 1
+
+    if weighted:
+        num_lat = np.shape(pred_annomaly)[1]
+        s = np.sum(np.cos(np.pi / 180 * lat_np(np.arange(0, num_lat), num_lat)))
+        weight = np.expand_dims(
+            latitude_weighting_factor(np.arange(0, num_lat), num_lat, s), -1
+        )
+    r = (weight * pred_annomaly * target_annomaly).sum() / np.sqrt(
+        (weight * pred_annomaly * pred_annomaly).sum()
+        * (weight * target_annomaly * target_annomaly).sum()
     )
     return r
 
@@ -73,7 +72,7 @@ def weighted_acc_masked(pred, target, weighted=True, maskarray=1):
 
 def rmse(pred: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
     """
-    Calculates RMSE between pred and target (torch tensors) ignoring NaN values.
+    Calculates RMSE between pred and target (torch tensors).
     Args:
         output (torch.Tensor): The predicted values.
         target (torch.Tensor): The ground truth values.
@@ -81,16 +80,15 @@ def rmse(pred: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
     Returns:
         torch.Tensor: The RMSE value as a scalar tensor.
     """
-    # Ignore NaNs (becuause of land-sea mask)
-    mask = ~torch.isnan(pred) & ~torch.isnan(target)
-    mse = torch.mean((pred[mask] - target[mask]) ** 2)
+    mse = torch.mean((pred - target) ** 2)
     return torch.sqrt(mse)
 
 
 def mape(pred: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
     """
-    Computes the Mean Absolute Percentage Error (MAPE) between predicted and target tensors,
-    ignoring NaN values.
+    Computes the Mean Absolute Percentage Error (MAPE) between predicted and target tensors.
+    Tends to be very high, since there are some examples where target is zero & pred is 1.
+    Using median instead of mean yields a more robust metric, but uncommon. Therefore we use mean.
 
     Args:
         output (torch.Tensor): The predicted values.
@@ -101,12 +99,7 @@ def mape(pred: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
     """
     # Avoid division by zero by adding a small constant to the denominator
     epsilon = 1e-8
-
-    mask = ~torch.isnan(pred) & ~torch.isnan(target)
-    mape = (
-        torch.mean(torch.abs((pred[mask] - target[mask]) / (target[mask] + epsilon)))
-        * 100
-    )
+    mape = torch.median(torch.abs((pred - target) / (target + epsilon))) * 100
     return mape
 
 
