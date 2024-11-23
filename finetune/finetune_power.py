@@ -361,7 +361,7 @@ def test_baselines(args, baseline_type):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--type_net", type=str, default="TEST")
+    parser.add_argument("--type_net", type=str, default="Mean")
     parser.add_argument("--load_my_best", type=bool, default=True)
     parser.add_argument("--launcher", default="pytorch", help="job launcher")
     parser.add_argument("--local-rank", type=int, default=0)
@@ -390,4 +390,4 @@ if __name__ == "__main__":
     #     main(0, args, 1, master_port)
     # test_best_model(args)
 
-    test_baselines(args, "persistence")
+    test_baselines(args, "mean")

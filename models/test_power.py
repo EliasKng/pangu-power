@@ -169,8 +169,9 @@ def test_baseline(test_loader, device, res_path, baseline_type: str):
             periods_test,
         ) = data
 
-        input_test, input_surface_test, target_power_test = (
+        input_test, input_power_test, input_surface_test, target_power_test = (
             input_test.to(device),
+            input_power_test.to(device),
             input_surface_test.to(device),
             target_power_test.to(device),
         )
@@ -203,8 +204,6 @@ def test_baseline(test_loader, device, res_path, baseline_type: str):
         # Compute test scores
         output_power_test = output_power_test.squeeze()
         target_power_test = target_power_test.squeeze()
-        # To cpu (output_power_test is already on cpu)
-        target_power_test = target_power_test.to("cpu")
         mean_power_per_grid_point = utils_data.loadMeanPower(output_power_test.device)
 
         # Calculate scores using the helper function

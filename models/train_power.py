@@ -98,6 +98,8 @@ def visualize(
     path,
     input_power=None,
 ):
+    if input_power is not None:
+        input_power = input_power.detach().cpu().squeeze()
     utils.visuailze_all(
         output_power.detach().cpu().squeeze(),
         target_power.detach().cpu().squeeze(),
