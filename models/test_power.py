@@ -151,7 +151,7 @@ def test(test_loader, model, device, res_path):
     utils.save_error_power(csv_path, acc_power, "acc")
 
 
-def test_baselines(test_loader, device, res_path):
+def test_baseline(test_loader, device, res_path, baseline_type: str):
     rmse_power = dict()
     mape_power = dict()
     acc_power = dict()
@@ -178,7 +178,7 @@ def test_baselines(test_loader, device, res_path):
         # Inference
         mean_power = utils_data.loadMeanPower(device)
         output_power_test = baseline_inference(
-            input_power_test, mean_power, "persistence"
+            input_power_test, mean_power, baseline_type
         )
 
         # Apply lsm
@@ -197,11 +197,14 @@ def test_baselines(test_loader, device, res_path):
             target_surface_test,
             target_time,
             png_path,
+            input_power=input_power_test,
         )
 
         # Compute test scores
         output_power_test = output_power_test.squeeze()
         target_power_test = target_power_test.squeeze()
+        # To cpu (output_power_test is already on cpu)
+        target_power_test = target_power_test.to("cpu")
         mean_power_per_grid_point = utils_data.loadMeanPower(output_power_test.device)
 
         # Calculate scores using the helper function
