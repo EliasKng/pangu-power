@@ -50,6 +50,36 @@ def model_inference(
     return output_power, output_surface
 
 
+def baseline_inference(
+    input_power: torch.Tensor, mean_power: torch.Tensor, type: str = "persistence"
+) -> torch.Tensor:
+    """Returns the specified baseline prediction.
+    Persistence: returns the input power as the prediction.
+    Mean: returns the mean power per grid point as the prediction.
+
+    Parameters
+    ----------
+    input_power : torch.Tensor
+        Power capacity factor at time t.
+    mean_power : torch.Tensor
+        A tensor containing the mean power per grid point.
+    type : str, optional
+        Specifies the type of baseline prediction, by default "persistence".
+
+    Returns
+    -------
+    torch.Tensor
+        Forecasted power capacity factor at time t+1.
+    """
+
+    if type == "persistence":
+        return input_power
+    elif type == "mean":
+        return mean_power
+
+    raise NotImplementedError(f"Baseline type {type} not implemented.")
+
+
 def calculate_loss(output, target, criterion, lsm_expanded):
     mask_not_zero = ~(lsm_expanded == 0)
     mask_not_zero = mask_not_zero.unsqueeze(1)
@@ -193,6 +223,7 @@ def train_one_epoch(
         (
             input,
             input_surface,
+            input_power,
             target_power,
             target_upper,
             target_surface,
@@ -275,6 +306,7 @@ def validate(
             (
                 input_val,
                 input_surface_val,
+                input_power_val,
                 target_power_val,
                 target_upper_val,
                 target_surface_val,
