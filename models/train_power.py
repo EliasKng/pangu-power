@@ -3,7 +3,6 @@ import copy
 import torch
 from torch import nn
 import torch.distributed as dist
-from datetime import datetime
 import warnings
 from era5_data import utils, utils_data
 from era5_data.config import cfg
@@ -21,10 +20,6 @@ warnings.filterwarnings(
     "ignore",
     message="Attempting to use hipBLASLt on an unsupported architecture! Overriding blas backend to hipblas",
 )
-
-
-def load_constants(device):
-    return utils_data.loadAllConstants(device=device)
 
 
 def load_land_sea_mask(device, mask_type="sea", fill_value=0):
@@ -110,7 +105,7 @@ def train(
     best_loss = float("inf")
     epochs_since_last_improvement = 0
     best_model = model
-    aux_constants = load_constants(device)
+    aux_constants = utils_data.loadAllConstants(device=device)
 
     # Termination flag to signal early stopping
     early_stop_flag = torch.tensor(
@@ -321,11 +316,11 @@ def validate(
             best_model = copy.deepcopy(model.module)
             # Save both a deepcopy and statedict of the best model (deepcopy is for testing, statedict for re-using model)
             if rank == 0:
-                torch.save(
-                    best_model, os.path.join(res_path, "models", "best_model.pth")
-                )
                 save_model_checkpoint(
                     model, optimizer, lr_scheduler, res_path, epoch, is_best=True
+                )
+                torch.save(
+                    best_model, os.path.join(res_path, "models", "best_model.pth")
                 )
                 logger.info(
                     f"New best model saved at epoch {epoch} with validation loss: {val_loss:.4f}"
@@ -335,42 +330,3 @@ def validate(
             epochs_since_last_improvement += 1
 
     return val_loss, best_model, epochs_since_last_improvement
-
-
-def test(test_loader, model, device, res_path):
-    aux_constants = load_constants(device)
-    for id, data in enumerate(test_loader, 0):
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        print(f"[{timestamp}] predict on {id}")
-        (
-            input_test,
-            input_surface_test,
-            target_power_test,
-            target_upper_test,
-            target_surface_test,
-            periods_test,
-        ) = data
-
-        input_test, input_surface_test, target_power_test = (
-            input_test.to(device),
-            input_surface_test.to(device),
-            target_power_test.to(device),
-        )
-        model.eval()
-        output_power_test, output_surface_test = model_inference(
-            model, input_test, input_surface_test, aux_constants
-        )
-        lsm_expanded = load_land_sea_mask(output_power_test.device)
-        output_power_test = output_power_test * lsm_expanded
-        target_time = periods_test[1][0]
-        png_path = os.path.join(res_path, "png")
-        utils.mkdirs(png_path)
-        visualize(
-            output_power_test,
-            target_power_test,
-            input_surface_test,
-            output_surface_test,
-            target_surface_test,
-            target_time,
-            png_path,
-        )

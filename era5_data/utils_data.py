@@ -411,6 +411,14 @@ def loadAllConstants(device):
     return constants
 
 
+def loadMeanPower(device):
+    """Loads the mean power capacity factor per grid point, typically used to calculate ACC"""
+    numpy_array = np.load(cfg.MEAN_POWER_PATH)
+    # Convert the numpy array to a torch tensor
+    mean_power_per_grid_point = torch.from_numpy(numpy_array)
+    return mean_power_per_grid_point.to(device)
+
+
 def loadLandSeaMasksPangu(
     device_upper: torch.device,
     device_surface: torch.device,

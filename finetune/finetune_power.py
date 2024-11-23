@@ -17,7 +17,8 @@ from torch import nn
 import os
 from random import randrange
 from torch.utils import data
-from models.pangu_power_sample import test, train
+from wind_fusion.pangu_pytorch.models.train_power import train
+from wind_fusion.pangu_pytorch.models.test_power import test
 from models.pangu_power import (
     PanguPowerPatchRecovery,
     PanguPowerConvSigmoid,
@@ -338,7 +339,9 @@ def test_best_model(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--type_net", type=str, default="PatchRecovery_LoRA_Dist_Test9")
+    parser.add_argument(
+        "--type_net", type=str, default="PatchRecovery_LoRA_Dist_Test10"
+    )
     parser.add_argument("--load_my_best", type=bool, default=True)
     parser.add_argument("--launcher", default="pytorch", help="job launcher")
     parser.add_argument("--local-rank", type=int, default=0)

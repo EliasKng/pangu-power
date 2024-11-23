@@ -11,7 +11,7 @@ import os
 import torch
 import os
 from torch.utils import data
-from models.pangu_power_sample import test
+from wind_fusion.pangu_pytorch.models.test_power import test
 import argparse
 import time
 import logging

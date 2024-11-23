@@ -32,6 +32,8 @@ __C.POWER_PATH = (
 __C.LSM_PATH = (
     "/lsdf/kit/imk-tro/projects/Gruppe_Quinting/om1434/offshore/lsm_global.zarr"
 )
+# Mean Power path
+__C.MEAN_POWER_PATH = "/home/hk-project-test-mlperf/om1434/masterarbeit/wind_fusion/pangu_pytorch/data/aux_data/mean_power_per_grid_point.npy"
 
 __C.ERA5_UPPER_LEVELS = [
     "1000",
@@ -58,7 +60,7 @@ __C.PG.USE_LSM = True
 
 __C.PG.TRAIN = ConfigNamespace()
 __C.PG.TRAIN.EPOCHS = 100
-__C.PG.TRAIN.LR = 1e-3  # 5e-6  # 5e-4
+__C.PG.TRAIN.LR = 1e-4  # 5e-6  # 5e-4
 __C.PG.TRAIN.WEIGHT_DECAY = 1e-4  # 3e-6
 __C.PG.TRAIN.START_TIME = "20160101"
 __C.PG.TRAIN.END_TIME = "20161231"
@@ -127,5 +129,5 @@ __C.POWER.LORA = True  # Whether to use LORA. If POWER.USE_CHECKPOINT == True, t
 
 __C.LORA = ConfigNamespace()
 __C.LORA.R = 4
-__C.LORA.LORA_ALPHA = 16
-__C.LORA.LORA_DROPOUT = 0.9
+__C.LORA.LORA_ALPHA = 8
+__C.LORA.LORA_DROPOUT = 0.3
