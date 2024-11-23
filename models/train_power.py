@@ -96,6 +96,7 @@ def visualize(
     target_surface,
     step,
     path,
+    input_power=None,
 ):
     utils.visuailze_all(
         output_power.detach().cpu().squeeze(),
@@ -105,6 +106,7 @@ def visualize(
         target_surface.detach().cpu().squeeze(),
         step=step,
         path=path,
+        input_power=input_power,
     )
 
 
