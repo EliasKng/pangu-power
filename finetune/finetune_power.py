@@ -34,14 +34,16 @@ Finetune pangu_power on the energy dataset
 
 
 def _setup_lora(model, modules_to_save) -> torch.nn.Module:
-    """
-    Sets up LoRA for the model
+    """Sets up LoRA for the model
 
-    Args:
-        model: The model to set up LoRA for.
+    Parameters
+    ----------
+    model : The model to set up LoRA for.
+    modules_to_save : The model with LoRA setup.
 
-    Returns:
-        torch.nn.Module: The model with LoRA setup.
+    Returns
+    -------
+    torch.nn.Module: Returns a Peft model, as specified in the config file.
     """
 
     # Get all linear layers in the model. They will be tuned by LoRA.
@@ -361,7 +363,9 @@ def test_baselines(args, baseline_type):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--type_net", type=str, default="Baseline_Persistence")
+    parser.add_argument(
+        "--type_net", type=str, default="PatchRecovery_LoRA_Dist_Test10"
+    )
     parser.add_argument("--load_my_best", type=bool, default=True)
     parser.add_argument("--launcher", default="pytorch", help="job launcher")
     parser.add_argument("--local-rank", type=int, default=0)
@@ -388,6 +392,6 @@ if __name__ == "__main__":
     #     mp.spawn(main, args=(args, world_size, master_port), nprocs=world_size)  # type: ignore
     # else:
     #     main(0, args, 1, master_port)
-    # test_best_model(args)
+    test_best_model(args)
 
-    test_baselines(args, "persistence")
+    # test_baselines(args, "mean")
