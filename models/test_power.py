@@ -1,14 +1,13 @@
 import os
 from datetime import datetime
 import warnings
-from era5_data import utils, utils_data
+from wind_fusion.pangu_pytorch.era5_data import utils, utils_data, score
 from wind_fusion.pangu_pytorch.models.train_power import (
     model_inference,
     baseline_inference,
     load_land_sea_mask,
     visualize,
 )
-from era5_data import score
 import torch
 
 

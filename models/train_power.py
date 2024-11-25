@@ -4,8 +4,8 @@ import torch
 from torch import nn
 import torch.distributed as dist
 import warnings
-from era5_data import utils, utils_data
-from era5_data.config import cfg
+from wind_fusion.pangu_pytorch.era5_data import utils, utils_data
+from wind_fusion.pangu_pytorch.era5_data.config import cfg
 from typing import Tuple, Dict, List, Union
 import logging
 from tensorboardX import SummaryWriter
