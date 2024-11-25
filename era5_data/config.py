@@ -125,7 +125,7 @@ __C.POWER.CHECKPOINT = ""
 # - PanguPowerConvSigmoid: Same as PanguPowerConv but with a sigmoid activation function at the end
 __C.POWER.MODEL_TYPE = "PanguPowerPatchRecovery"
 
-__C.POWER.LORA = True  # Whether to use LORA. If POWER.USE_CHECKPOINT == True, the checkpoint must have been trained with LORA, too.
+__C.POWER.LORA = False  # Whether to use LORA. If POWER.USE_CHECKPOINT == True, the checkpoint must have been trained with LORA, too.
 
 __C.LORA = ConfigNamespace()
 __C.LORA.R = 4
