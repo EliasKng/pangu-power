@@ -1,6 +1,5 @@
 import sys
 import os
-from typing import Tuple
 from torch import Tensor
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -12,7 +11,8 @@ from wind_fusion.pangu_pytorch.era5_data.config import cfg
 class BaselineFormula(nn.Module):
     """Baseline model that uses wind turbine power curve to predict power"""
 
-    def __init__(self):
+    def __init__(self, device: torch.device):
+        super().__init__()
         self.offshore_power_curve_fapacity_factor = cfg.POWER_CURVE_OFFSHORE
 
         # Check if keys are sorted, required for linear search in interpolation
@@ -22,21 +22,30 @@ class BaselineFormula(nn.Module):
 
         # Prepare lists of wind speed and power
         self.wind_speeds = torch.tensor(
-            list(self.offshore_power_curve_fapacity_factor.keys()), dtype=torch.float32
+            list(self.offshore_power_curve_fapacity_factor.keys()),
+            dtype=torch.float32,
+            device=device,
         )
         self.power_levels = torch.tensor(
             list(self.offshore_power_curve_fapacity_factor.values()),
             dtype=torch.float32,
+            device=device,
         )
 
     def forward(
         self,
-        pangu_output_surface: Tensor,
         pangu_output_upper: Tensor,
-    ) -> Tuple[Tensor, Tensor]:
-        # TODO(EliasKng): Isolate wind speed components (u and v), then calculate wind speed, then calculate power
+        pangu_output_surface: Tensor,
+    ) -> Tensor:
+        # Calculate wind speed from u and v components ws = (u^2 + v^2)^0.5
+        wind_speed = torch.sqrt(
+            pangu_output_surface[:, 1, :, :] ** 2
+            + pangu_output_surface[:, 2, :, :] ** 2
+        )
 
-        output_power = None
+        # Calculate wind power
+        output_power = self._interpolate_wind_capacity_factor(wind_speed)
+
         return output_power
 
     # Interpolation function
@@ -66,8 +75,8 @@ class BaselineFormula(nn.Module):
 
         x0 = self.wind_speeds[indices - 1]
         x1 = self.wind_speeds[indices]
-        y0 = self.powers[indices - 1]
-        y1 = self.powers[indices]
+        y0 = self.power_levels[indices - 1]
+        y1 = self.power_levels[indices]
 
         # Linear interpolation
         return y0 + (y1 - y0) * (wind_speed - x0) / (x1 - x0)

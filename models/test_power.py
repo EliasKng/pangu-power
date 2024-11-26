@@ -8,6 +8,7 @@ from wind_fusion.pangu_pytorch.models.train_power import (
     load_land_sea_mask,
     visualize,
 )
+from wind_fusion.pangu_pytorch.models.baseline_formula import BaselineFormula
 import torch
 
 
@@ -150,10 +151,12 @@ def test(test_loader, model, device, res_path):
     utils.save_error_power(csv_path, acc_power, "acc")
 
 
-def test_baseline(test_loader, device, res_path, baseline_type: str):
+def test_baseline(test_loader, pangu_model, device, res_path, baseline_type: str):
     rmse_power = dict()
     mape_power = dict()
     acc_power = dict()
+
+    baseline_formula = BaselineFormula(device).to(device)
 
     for id, data in enumerate(test_loader, 0):
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -177,9 +180,29 @@ def test_baseline(test_loader, device, res_path, baseline_type: str):
 
         # Inference
         mean_power = utils_data.loadMeanPower(device)
-        output_power_test = baseline_inference(
-            input_power_test, mean_power, baseline_type
-        )
+
+        # Pangu output is required for formula baseline, therefore we need to run the model
+        if baseline_type == "formula":
+            pangu_model.eval()
+            # Inference
+            aux_constants = utils_data.loadAllConstants(device=device)
+            output_weather_upper, output_weather_surface = model_inference(
+                pangu_model, input_test, input_surface_test, aux_constants
+            )
+
+            # Inference
+            output_power_test = baseline_inference(
+                input_power_test,
+                mean_power,
+                output_weather_upper,
+                output_weather_surface,
+                baseline_formula,
+                baseline_type,
+            )
+        else:
+            output_power_test = baseline_inference(
+                input_power_test, mean_power, type=baseline_type
+            )
 
         # Apply lsm
         lsm_expanded = load_land_sea_mask(output_power_test.device, fill_value=0)
