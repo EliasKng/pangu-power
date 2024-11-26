@@ -270,7 +270,7 @@ def main(
     )
 
     model = load_model(device)
-    model = DDP(model, device_ids=[device])
+    model = DDP(model, device_ids=[device], find_unused_parameters=True)
 
     # If static graph is not set, LoRA returns errors.
     if cfg.POWER.LORA:
@@ -364,7 +364,7 @@ def test_baselines(args, baseline_type):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--type_net", type=str, default="PatchRecoveryAll_Test8")
+    parser.add_argument("--type_net", type=str, default="PatchRecovery_Test9")
     parser.add_argument("--load_my_best", type=bool, default=True)
     parser.add_argument("--launcher", default="pytorch", help="job launcher")
     parser.add_argument("--local-rank", type=int, default=0)
