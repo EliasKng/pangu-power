@@ -34,6 +34,7 @@ __C.LSM_PATH = (
 )
 # Mean Power path
 __C.MEAN_POWER_PATH = "/home/hk-project-test-mlperf/om1434/masterarbeit/wind_fusion/pangu_pytorch/data/aux_data/mean_power_per_grid_point.npy"
+__C.POWER_CURVE_PATH = "/home/hk-project-test-mlperf/om1434/masterarbeit/wind_fusion/pangu_pytorch/data/power_curves/wind_turbine_power_curves.csv"
 
 __C.ERA5_UPPER_LEVELS = [
     "1000",
