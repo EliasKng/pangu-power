@@ -496,7 +496,7 @@ def loadLandSeaMask(
     return torch.tensor(lsm_expanded_np, device=device)
 
 
-def loadWindPowerCurves(offshore: bool = True) -> pd.Series:
+def loadWindPowerCurve(offshore: bool = True) -> pd.Series:
     """Load the wind power curves for onshore and offshore wind turbines.
 
     Parameters
@@ -552,4 +552,4 @@ def normBackDataSurface(surface, statistics):
 
 
 if __name__ == "__main__":
-    print(loadWindPowerCurves(False).head(20))
+    print(loadWindPowerCurve(False).head(20))
