@@ -6,39 +6,14 @@ from torch import Tensor
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import torch
 from torch import nn
+from wind_fusion.pangu_pytorch.era5_data.config import cfg
 
 
 class BaselineFormula(nn.Module):
     """Baseline model that uses wind turbine power curve to predict power"""
 
     def __init__(self):
-        # TODO(EliasKng): Move to config
-        self.offshore_power_curve_fapacity_factor = {
-            0: 0.0,
-            3.5: 0.0,
-            4: 0.00875,
-            4.5: 0.01875,
-            5: 0.035,
-            5.5: 0.063125,
-            6: 0.09375,
-            6.5: 0.1375,
-            7: 0.18125,
-            7.5: 0.240625,
-            8: 0.3,
-            8.5: 0.38625,
-            9: 0.4725,
-            9.5: 0.58625,
-            10: 0.7,
-            10.5: 0.79875,
-            11: 0.8975,
-            11.5: 0.95,
-            12: 0.96875,
-            12.5: 0.990625,
-            13: 1.0,
-            25: 1.0,
-            25.000000001: 0.0,
-            500: 0.0,
-        }
+        self.offshore_power_curve_fapacity_factor = cfg.POWER_CURVE_OFFSHORE
 
         # Check if keys are sorted, required for linear search in interpolation
         assert list(self.offshore_power_curve_fapacity_factor.keys()) == sorted(

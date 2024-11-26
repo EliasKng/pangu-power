@@ -132,3 +132,31 @@ __C.LORA = ConfigNamespace()
 __C.LORA.R = 4
 __C.LORA.LORA_ALPHA = 8
 __C.LORA.LORA_DROPOUT = 0.3
+
+# Contains the power curve of Vestas Offshore V164-8000, which is used to calculate power from wind speed in the CDS dataset
+__C.POWER_CURVE_OFFSHORE = {
+    0: 0.0,
+    3.5: 0.0,
+    4: 0.00875,
+    4.5: 0.01875,
+    5: 0.035,
+    5.5: 0.063125,
+    6: 0.09375,
+    6.5: 0.1375,
+    7: 0.18125,
+    7.5: 0.240625,
+    8: 0.3,
+    8.5: 0.38625,
+    9: 0.4725,
+    9.5: 0.58625,
+    10: 0.7,
+    10.5: 0.79875,
+    11: 0.8975,
+    11.5: 0.95,
+    12: 0.96875,
+    12.5: 0.990625,
+    13: 1.0,
+    25: 1.0,
+    25.000000001: 0.0,
+    500: 0.0,
+}
