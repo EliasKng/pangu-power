@@ -85,7 +85,7 @@ __C.PG.VAL.USE_LSM = __C.PG.USE_LSM
 __C.PG.TEST = ConfigNamespace()
 __C.PG.TEST.START_TIME = "20180101"
 __C.PG.TEST.END_TIME = "20181231"
-# __C.PG.TEST.END_TIME = "20180108"
+__C.PG.TEST.END_TIME = "20180108"
 __C.PG.TEST.FREQUENCY = "48h"
 __C.PG.TEST.BATCH_SIZE = 1
 __C.PG.TEST.USE_LSM = __C.PG.USE_LSM
@@ -133,7 +133,9 @@ __C.LORA.R = 4
 __C.LORA.LORA_ALPHA = 8
 __C.LORA.LORA_DROPOUT = 0.3
 
-# Contains the power curve of Vestas Offshore V164-8000, which is used to calculate power from wind speed in the CDS dataset
+# Contains the power curve of Vestas Offshore V164-8000, which is used to calculate power from wind speed in the CDS dataset:
+# Power curves can be found at:
+# https://confluence.ecmwf.int/display/CKB/Climate+and+energy+indicators+for+Europe+datasets%3A+Technical+description+of+methodologies+followed+in+the+development+of+each+product
 __C.POWER_CURVE_OFFSHORE = {
     0: 0.0,
     3.5: 0.0,
@@ -158,5 +160,35 @@ __C.POWER_CURVE_OFFSHORE = {
     13: 1.0,
     25: 1.0,
     25.000000001: 0.0,
+    500: 0.0,
+}
+# Same, but here in kW instead of capacity factors
+__C.POWER_CURVE_OFFSHORE_kW = {
+    # No power below 3.5 m/s
+    0: 0,
+    3.5: 0,
+    4: 70,
+    4.5: 150,
+    5: 280,
+    5.5: 505,
+    6: 750,
+    6.5: 1100,
+    7: 1450,
+    7.5: 1925,
+    8: 2400,
+    8.5: 3090,
+    9: 3780,
+    9.5: 4690,
+    10: 5600,
+    10.5: 6390,
+    11: 7180,
+    11.5: 7600,
+    12: 7750,
+    12.5: 7925,
+    # Max power at 12.5-25 m/s
+    13: 8000,
+    25: 8000,
+    # Power cut-off at 25 m/s
+    25.000000001: 0,
     500: 0.0,
 }
