@@ -37,7 +37,7 @@ class BaselineFormula(nn.Module):
         pangu_output_upper: Tensor,
         pangu_output_surface: Tensor,
     ) -> Tensor:
-        # Calculate wind speed from u and v components ws = (u^2 + v^2)^0.5
+        # Calculate wind speed from u and v components (surface level). ws = (u^2 + v^2)^0.5
         wind_speed = torch.sqrt(
             pangu_output_surface[:, 1, :, :] ** 2
             + pangu_output_surface[:, 2, :, :] ** 2
