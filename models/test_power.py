@@ -9,7 +9,6 @@ from wind_fusion.pangu_pytorch.models.train_power import (
     visualize,
 )
 from wind_fusion.pangu_pytorch.models.baseline_formula import BaselineFormula
-import torch
 
 
 warnings.filterwarnings(
@@ -216,7 +215,7 @@ def test_baseline(test_loader, pangu_model, device, res_path, baseline_type: str
             output_power_test,
             target_power_test,
             input_surface_test,
-            torch.zeros_like(input_surface_test),
+            output_weather_surface,
             target_surface_test,
             target_time,
             png_path,
