@@ -927,65 +927,6 @@ class PatchRecoveryPowerUpper(nn.Module):
         return output
 
 
-class PatchRecoveryPowerAll(nn.Module):
-    def __init__(self, dim):
-        super().__init__()
-        """Patch recovery operation"""
-        self.patch_size = (2, 4, 4)
-        self.dim = dim  # 384
-
-        self.conv = nn.Conv1d(in_channels=dim, out_channels=16, kernel_size=1, stride=1)
-
-    def forward(self, x, Z, H, W):  # x: [1, 521280, 384], Z: 8, H: 181, W: 360
-        """Adaption of the original forward pass of the PatchRecivery (PatchRecovery_pretrain).
-        See the original forward pass for more details.
-        - All pressure-levels are used
-        """
-        # The inverse operation of the patch embedding operation, patch_size = (2, 4, 4) as in the original paper
-        # Reshape x back to three dimensions
-        x = torch.permute(x, (0, 2, 1))  # [1, 384, 521280]
-        x = x.view(x.shape[0], x.shape[1], Z, H, W)  # [1, 384, 8, 181, 360]
-
-        # Flatten
-        output = x.view(x.shape[0], x.shape[1], -1)  # [1, 384, 521280]
-
-        # Apply upper convolution
-        output = self.conv(output)  # [1, 32, 521280]
-
-        # Recover [724, 1440] shape
-        output = output.reshape(
-            output.shape[0],
-            1,
-            1,
-            self.patch_size[1],
-            self.patch_size[2],
-            Z,
-            H,
-            W,
-        )  # [1, 1, 1, 4, 4, 8, 181, 360]
-        output = torch.permute(
-            output, (0, 1, 5, 2, 6, 3, 7, 4)
-        )  # [1, 1, 8, 1, 181, 4, 360, 4]
-        output = output.reshape(
-            output.shape[0], 1, 8, 724, 1440
-        )  # [1, 1, 8, 724, 1440]
-
-        # Remove padding
-        depth_slice = slice(0, output.shape[-3] - 1)
-        height_slice = slice(0, output.shape[-2] - 3)
-        output = output[:, :, depth_slice, height_slice, :]  # [1, 1, 7, 721, 1440]
-        output = output.view(
-            output.shape[0], 1, 1, 7, 721, 1440
-        )  # [1, 1, 1, 7, 721, 1440]
-        output = output.view(output.shape[0], 1, 7, 721, 1440)  # [1, 1, 15, 721, 1440]
-
-        # Slice out lowest level
-        output = output[:, :, 0, :, :]  # [1, 1, 1, 721, 1440]
-        output = output.view(output.shape[0], 1, 721, 1440)  # [1, 1, 721, 1440]
-
-        return output
-
-
 class PatchRecoveryPowerUpper_2(nn.Module):
     """Uses exactly the same PatchRecovery as Pangu, but slices out only one variable & pressure level from upper output. Adds clipped relu at the end."""
 
@@ -998,9 +939,6 @@ class PatchRecoveryPowerUpper_2(nn.Module):
         # Bekomme 384 Enigabebilder, Projiziere runter auf 160 Aufgabebilder
         self.conv = nn.Conv1d(
             in_channels=dim, out_channels=160, kernel_size=1, stride=1
-        )
-        self.conv_surface = nn.Conv1d(
-            in_channels=dim, out_channels=64, kernel_size=1, stride=1
         )
 
     def forward(self, x, Z, H, W):  # x: [1, 521280, 384], Z: 8, H: 181, W: 360
@@ -1064,6 +1002,65 @@ class PatchRecoveryPowerUpper_2(nn.Module):
 
         # Clipped ReLU
         output = clipped_relu(output)
+
+        return output
+
+
+class PatchRecoveryPowerAll(nn.Module):
+    def __init__(self, dim):
+        super().__init__()
+        """Patch recovery operation"""
+        self.patch_size = (2, 4, 4)
+        self.dim = dim  # 384
+
+        self.conv = nn.Conv1d(in_channels=dim, out_channels=16, kernel_size=1, stride=1)
+
+    def forward(self, x, Z, H, W):  # x: [1, 521280, 384], Z: 8, H: 181, W: 360
+        """Adaption of the original forward pass of the PatchRecivery (PatchRecovery_pretrain).
+        See the original forward pass for more details.
+        - All pressure-levels are used
+        """
+        # The inverse operation of the patch embedding operation, patch_size = (2, 4, 4) as in the original paper
+        # Reshape x back to three dimensions
+        x = torch.permute(x, (0, 2, 1))  # [1, 384, 521280]
+        x = x.view(x.shape[0], x.shape[1], Z, H, W)  # [1, 384, 8, 181, 360]
+
+        # Flatten
+        output = x.view(x.shape[0], x.shape[1], -1)  # [1, 384, 521280]
+
+        # Apply upper convolution
+        output = self.conv(output)  # [1, 32, 521280]
+
+        # Recover [724, 1440] shape
+        output = output.reshape(
+            output.shape[0],
+            1,
+            1,
+            self.patch_size[1],
+            self.patch_size[2],
+            Z,
+            H,
+            W,
+        )  # [1, 1, 1, 4, 4, 8, 181, 360]
+        output = torch.permute(
+            output, (0, 1, 5, 2, 6, 3, 7, 4)
+        )  # [1, 1, 8, 1, 181, 4, 360, 4]
+        output = output.reshape(
+            output.shape[0], 1, 8, 724, 1440
+        )  # [1, 1, 8, 724, 1440]
+
+        # Remove padding
+        depth_slice = slice(0, output.shape[-3] - 1)
+        height_slice = slice(0, output.shape[-2] - 3)
+        output = output[:, :, depth_slice, height_slice, :]  # [1, 1, 7, 721, 1440]
+        output = output.view(
+            output.shape[0], 1, 1, 7, 721, 1440
+        )  # [1, 1, 1, 7, 721, 1440]
+        output = output.view(output.shape[0], 1, 7, 721, 1440)  # [1, 1, 15, 721, 1440]
+
+        # Slice out lowest level
+        output = output[:, :, 0, :, :]  # [1, 1, 1, 721, 1440]
+        output = output.view(output.shape[0], 1, 721, 1440)  # [1, 1, 721, 1440]
 
         return output
 
