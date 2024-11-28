@@ -271,7 +271,7 @@ def main(
     )
 
     model = load_model(device)
-    model = DDP(model, device_ids=[device], find_unused_parameters=True)
+    model = DDP(model, device_ids=[device])
 
     # If static graph is not set, LoRA returns errors.
     if cfg.POWER.LORA:
