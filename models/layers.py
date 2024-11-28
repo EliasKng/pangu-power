@@ -864,6 +864,80 @@ class PatchRecoveryPowerSurface(nn.Module):
         return output
 
 
+class PatchRecoveryPowerSurface_2(nn.Module):
+    """Uses exactly the same PatchRecovery as Pangu, but slices out only one variable from surface output. Adds clipped relu at the end."""
+
+    def __init__(self, dim):
+        super().__init__()
+        """Patch recovery operation"""
+        # Here we use two transposed convolutions to recover data
+        self.patch_size = (2, 4, 4)
+        self.dim = dim  # 384
+        self.conv_surface = nn.Conv1d(
+            in_channels=dim, out_channels=64, kernel_size=1, stride=1
+        )
+
+    def forward(self, x, Z, H, W):  # x: [1, 521280, 384], Z: 8, H: 181, W: 360
+        """Recovers original patches.
+
+        Parameters
+        ----------
+        x : Output of the UpSample operation
+        Z : Dimension of the different pressure levels. Later we will have 13 pressure levels + surface level. [surface level, (7 * 2)-1 pressure levels. The 2 origins from the patch size (2, 4, 4), the -1 is removal of zero-padding]
+        H : Number of patches in the height direction (181 * 4 = 724). After removal of padding, we receive 721 as output height dimension.
+        W : Number of patches in the width direction (360 * 4 = 1440)
+
+        Returns
+        -------
+        Power output
+        """
+        # The inverse operation of the patch embedding operation, patch_size = (2, 4, 4) as in the original paper
+        # Reshape x back to three dimensions
+        x = torch.permute(x, (0, 2, 1))  # [1, 384, 521280]
+        x = x.view(x.shape[0], x.shape[1], Z, H, W)  # [1, 384, 8, 181, 360]
+
+        height_slice = slice(0, 724 - 3)
+
+        # Slice out surface data
+        output_surface = x[:, :, 0, :, :]  # [1, 384, 181, 360]
+
+        # Flatten
+        output_surface = output_surface.view(
+            output_surface.shape[0], self.dim, -1
+        )  # [1, 384, 65160]
+
+        # Apply surface convolution
+        output_surface = self.conv_surface(output_surface)  # [1, 64, 65160]
+
+        # Recover [724, 1440] shape
+        output_surface = output_surface.view(
+            output_surface.shape[0], 4, self.patch_size[1], self.patch_size[2], H, W
+        )  # [1, 4, 4, 4, 181, 360]
+        output_surface = torch.permute(
+            output_surface, (0, 1, 4, 2, 5, 3)
+        )  # [1, 4, 181, 4, 360, 4]
+        output_surface = output_surface.reshape(
+            output_surface.shape[0], 4, 724, 1440
+        )  # [1, 4, 724, 1440]
+
+        # Remove apdding
+        output_surface = output_surface[:, :, height_slice, :]  # [1, 4, 721, 1440]
+        output_surface = output_surface.view(
+            output_surface.shape[0], 4, 1, 721, 1440
+        )  # [1, 4, 1, 721, 1440]
+        # output_surface = output_surface * self.surface_std + self.surface_mean
+        output_surface = output_surface.view(
+            output_surface.shape[0], 4, 721, 1440
+        )  # [1, 4, 721, 1440]
+
+        output_surface = output_surface[:, 0:1, :, :]  # [1, 1, 721, 1440]
+
+        # Clipped ReLU
+        output_surface = clipped_relu(output_surface)
+
+        return output_surface
+
+
 class PatchRecoveryPowerUpper(nn.Module):
     def __init__(self, dim):
         super().__init__()
@@ -953,7 +1027,7 @@ class PatchRecoveryPowerUpper_2(nn.Module):
 
         Returns
         -------
-        Final pangu weather output for both surface and upper variables.
+        Power output
         """
         # The inverse operation of the patch embedding operation, patch_size = (2, 4, 4) as in the original paper
         # Reshape x back to three dimensions
@@ -1241,7 +1315,7 @@ def main():
     W = 360
 
     # Instantiate the PatchRecoveryAll class
-    model = PatchRecoveryPowerAll_2(dim=384)
+    model = PatchRecoveryPowerSurface_2(dim=384)
 
     # Call the forward method
     output = model.forward(x, Z, H, W)
