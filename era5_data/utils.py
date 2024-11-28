@@ -230,6 +230,7 @@ def visuailze_all(
     target_pangu_surface,
     step,
     path,
+    input_power=None,
 ):
     """Visualizes both wind_speeds (pangu) and power predictions."""
     variables = cfg.ERA5_SURFACE_VARIABLES
@@ -247,13 +248,15 @@ def visuailze_all(
     input_ws = prepare_europe(input_ws)
     target_ws = prepare_europe(target_ws)
     output_ws = prepare_europe(output_ws)
+    if input_power is not None:
+        input_power = prepare_europe(input_power)
     target_power = prepare_europe(target_power)
     output_power = prepare_europe(output_power)
 
     max_bias_ws = _calc_max_bias(output_ws, target_ws)
     max_bias_power = _calc_max_bias(output_power, target_power)
 
-    fig = plt.figure(figsize=(12, 4))
+    fig = plt.figure(figsize=(12, 4), dpi=600)
 
     ax_1 = fig.add_subplot(241)
     plot_1 = ax_1.imshow(input_ws, cmap="coolwarm")
@@ -276,6 +279,12 @@ def visuailze_all(
     )
     plt.colorbar(plot_4, ax=ax_4, fraction=0.05, pad=0.05)
     ax_4.title.set_text("bias[ws]")
+
+    if input_power is not None:
+        ax_5 = fig.add_subplot(245)
+        plot_5 = ax_5.imshow(input_power, cmap="coolwarm")
+        plt.colorbar(plot_5, ax=ax_5, fraction=0.05, pad=0.05)
+        ax_5.title.set_text("input[power]")
 
     ax_6 = fig.add_subplot(246)
     plot_6 = ax_6.imshow(target_power, cmap="coolwarm")
@@ -300,7 +309,7 @@ def visuailze_all(
     ax_8.title.set_text("bias[power]")
 
     plt.tight_layout()
-    plt.savefig(fname=os.path.join(path, "{}_power".format(step)))
+    plt.savefig(fname=os.path.join(path, "{}_power.pdf".format(step)))
     plt.close()
 
 

@@ -11,19 +11,20 @@ import torch
 from torch.optim.adam import Adam
 from torch.utils.data.distributed import DistributedSampler
 from torch.distributed import init_process_group, destroy_process_group
-import torch.multiprocessing as mp
 from torch.nn.parallel import DistributedDataParallel as DDP
+import torch.multiprocessing as mp
 from torch import nn
 import os
 from random import randrange
 from torch.utils import data
 from wind_fusion.pangu_pytorch.models.train_power import train
-from wind_fusion.pangu_pytorch.models.test_power import test
+from wind_fusion.pangu_pytorch.models.test_power import test, test_baseline
 from models.pangu_power import (
     PanguPowerPatchRecovery,
     PanguPowerConvSigmoid,
     PanguPowerConv,
 )
+from models.pangu_model import PanguModel
 import argparse
 import logging
 from tensorboardX import SummaryWriter
@@ -35,14 +36,16 @@ Finetune pangu_power on the energy dataset
 
 
 def _setup_lora(model, modules_to_save) -> torch.nn.Module:
-    """
-    Sets up LoRA for the model
+    """Sets up LoRA for the model
 
-    Args:
-        model: The model to set up LoRA for.
+    Parameters
+    ----------
+    model : The model to set up LoRA for.
+    modules_to_save : The model with LoRA setup.
 
-    Returns:
-        torch.nn.Module: The model with LoRA setup.
+    Returns
+    -------
+    torch.nn.Module: Returns a Peft model, as specified in the config file.
     """
 
     # Get all linear layers in the model. They will be tuned by LoRA.
@@ -337,14 +340,38 @@ def test_best_model(args):
     )
 
 
+def test_baselines(args, baseline_type):
+    output_path = os.path.join(cfg.PG_OUT_PATH, args.type_net, str(cfg.PG.HORIZON))
+    utils.mkdirs(output_path)
+    logger = setup_logger(args.type_net, cfg.PG.HORIZON, output_path)
+    logger.info("Begin testing...")
+    device = _get_device(0, args.gpu_list)
+
+    test_dataloader = create_dataloader(
+        cfg.PG.TEST.START_TIME,
+        cfg.PG.TEST.END_TIME,
+        cfg.PG.TEST.FREQUENCY,
+        cfg.PG.TEST.BATCH_SIZE,
+        False,
+    )
+
+    pangu_model = PanguModel(device=device).to(device)
+
+    checkpoint = torch.load(cfg.PG.BENCHMARK.PRETRAIN_24_torch)
+    pangu_model.load_state_dict(checkpoint["model"])
+
+    test_baseline(
+        test_loader=test_dataloader,
+        pangu_model=pangu_model,
+        device=device,
+        res_path=output_path,
+        baseline_type=baseline_type,
+    )
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--type_net", type=str, default="PatchRecovery_LoRA_Dist_Test10"
-    )
-    parser.add_argument("--load_my_best", type=bool, default=True)
-    parser.add_argument("--launcher", default="pytorch", help="job launcher")
-    parser.add_argument("--local-rank", type=int, default=0)
+    parser.add_argument("--type_net", type=str, default="PatchRecoveryAll_Test11")
     parser.add_argument(
         "--gpu_list",
         type=int,
@@ -369,3 +396,5 @@ if __name__ == "__main__":
     else:
         main(0, args, 1, master_port)
     test_best_model(args)
+
+    # test_baselines(args, "formula")

@@ -4,9 +4,10 @@ import torch
 from torch import nn
 import torch.distributed as dist
 import warnings
-from era5_data import utils, utils_data
-from era5_data.config import cfg
-from typing import Tuple, Dict, List, Union
+from wind_fusion.pangu_pytorch.era5_data import utils, utils_data
+from wind_fusion.pangu_pytorch.models.baseline_formula import BaselineFormula
+from wind_fusion.pangu_pytorch.era5_data.config import cfg
+from typing import Tuple, Dict, List, Union, Optional
 import logging
 from tensorboardX import SummaryWriter
 
@@ -50,6 +51,61 @@ def model_inference(
     return output_power, output_surface
 
 
+def baseline_inference(
+    input_power: torch.Tensor,
+    mean_power: torch.Tensor,
+    output_upper: Optional[torch.Tensor] = None,
+    output_surface: Optional[torch.Tensor] = None,
+    baseline_formula: Optional[BaselineFormula] = None,
+    type: str = "persistence",
+) -> torch.Tensor:
+    """Returns the specified baseline prediction.
+    Persistence: returns the input power as the prediction.
+    Mean: returns the mean power per grid point as the prediction.
+    Formula: returns the prediction using the formula model.
+
+    Parameters
+    ----------
+    input_power : torch.Tensor
+        Power capacity factor at time t.
+    mean_power : torch.Tensor
+        A tensor containing the mean power per grid point.
+    output_upper : Optional[torch.Tensor], optional
+    The upper-level pangu model output used for the formula model, by default None.
+    output_surface : Optional[torch.Tensor], optional
+        The surface-level pangu model output used for the formula model, by default None.
+    baseline_formula: Optional[BaselineFormula], optional
+        The formula model used for the formula baseline, by default None.
+    type : str, optional
+        Specifies the type of baseline prediction, by default "persistence".
+
+    Returns
+    -------
+    torch.Tensor
+        Forecasted power capacity factor at time t+1.
+    """
+
+    if type == "persistence":
+        return input_power
+    elif type == "mean":
+        return mean_power
+    elif type == "formula":
+        assert (
+            output_surface is not None
+        ), "output_surface must be provided for formula baseline."
+        assert (
+            output_upper is not None
+        ), "output_upper must be provided for formula baseline."
+        assert (
+            baseline_formula is not None
+        ), "baseline_formula model must be provided for formula baseline."
+
+        # baseline_formula.eval()
+        return baseline_formula(output_upper, output_surface)
+
+    raise NotImplementedError(f"Baseline type {type} not implemented.")
+
+
 def calculate_loss(output, target, criterion, lsm_expanded):
     mask_not_zero = ~(lsm_expanded == 0)
     mask_not_zero = mask_not_zero.unsqueeze(1)
@@ -66,7 +122,10 @@ def visualize(
     target_surface,
     step,
     path,
+    input_power=None,
 ):
+    if input_power is not None:
+        input_power = input_power.detach().cpu().squeeze()
     utils.visuailze_all(
         output_power.detach().cpu().squeeze(),
         target_power.detach().cpu().squeeze(),
@@ -75,6 +134,7 @@ def visualize(
         target_surface.detach().cpu().squeeze(),
         step=step,
         path=path,
+        input_power=input_power,
     )
 
 
@@ -193,6 +253,7 @@ def train_one_epoch(
         (
             input,
             input_surface,
+            input_power,
             target_power,
             target_upper,
             target_surface,
@@ -275,6 +336,7 @@ def validate(
             (
                 input_val,
                 input_surface_val,
+                input_power_val,
                 target_power_val,
                 target_upper_val,
                 target_surface_val,

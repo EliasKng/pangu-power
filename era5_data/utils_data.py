@@ -48,7 +48,7 @@ class DataPrefetcher:
                 self.periods,
             ) = next(self.dataiter)
 
-        with torch.cuda.stream(self.stream):
+        with torch.cuda.stream(self.stream):  # type: ignore
             self.target = self.target.cuda(non_blocking=True)
             self.target_surface = self.target_surface.cuda(non_blocking=True)
             self.input = self.input.cuda(non_blocking=True)
@@ -496,6 +496,25 @@ def loadLandSeaMask(
     return torch.tensor(lsm_expanded_np, device=device)
 
 
+def loadWindPowerCurve(offshore: bool = True) -> pd.Series:
+    """Load the wind power curves for onshore and offshore wind turbines.
+
+    Parameters
+    ----------
+    offshore : bool, optional
+        Whether to load the offshore wind power, otherwise onshore is returned. Default is True.
+    """
+
+    # Load the wind turbine power curves
+    power_curves = pd.read_csv(cfg.POWER_CURVE_PATH, index_col=0)
+
+    if offshore:
+        # Select the offshore wind power curves
+        return power_curves["Power [kW] - Vestas Offshore V164-8000"]
+
+    return power_curves["Power [kW] - Vestas Onshore V136-3450"]
+
+
 def normData(upper, surface, statistics):
     surface_mean, surface_std, upper_mean, upper_std = (
         statistics[0],
@@ -533,8 +552,4 @@ def normBackDataSurface(surface, statistics):
 
 
 if __name__ == "__main__":
-    # dataset_path = cfg.PG_INPUT_PATH
-    # means, std = LoadStatic(os.path.join(dataset_path, 'aux_data'))
-    # print(means.shape) #(1, 21, 1, 1)
-    a, b, c, d = weatherStatistics_input()
-    print(a.shape)
+    print(loadWindPowerCurve(False).head(20))

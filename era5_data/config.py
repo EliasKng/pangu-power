@@ -34,6 +34,7 @@ __C.LSM_PATH = (
 )
 # Mean Power path
 __C.MEAN_POWER_PATH = "/home/hk-project-test-mlperf/om1434/masterarbeit/wind_fusion/pangu_pytorch/data/aux_data/mean_power_per_grid_point.npy"
+__C.POWER_CURVE_PATH = "/home/hk-project-test-mlperf/om1434/masterarbeit/wind_fusion/pangu_pytorch/data/power_curves/wind_turbine_power_curves.csv"
 
 __C.ERA5_UPPER_LEVELS = [
     "1000",
@@ -125,9 +126,69 @@ __C.POWER.CHECKPOINT = ""
 # - PanguPowerConvSigmoid: Same as PanguPowerConv but with a sigmoid activation function at the end
 __C.POWER.MODEL_TYPE = "PanguPowerPatchRecovery"
 
-__C.POWER.LORA = True  # Whether to use LORA. If POWER.USE_CHECKPOINT == True, the checkpoint must have been trained with LORA, too.
+__C.POWER.LORA = False  # Whether to use LORA. If POWER.USE_CHECKPOINT == True, the checkpoint must have been trained with LORA, too.
 
 __C.LORA = ConfigNamespace()
 __C.LORA.R = 4
 __C.LORA.LORA_ALPHA = 8
 __C.LORA.LORA_DROPOUT = 0.3
+
+# Contains the power curve of Vestas Offshore V164-8000, which is used to calculate power from wind speed in the CDS dataset:
+# Power curves can be found at:
+# https://confluence.ecmwf.int/display/CKB/Climate+and+energy+indicators+for+Europe+datasets%3A+Technical+description+of+methodologies+followed+in+the+development+of+each+product
+__C.POWER_CURVE_OFFSHORE = {
+    0: 0.0,
+    3.5: 0.0,
+    4: 0.00875,
+    4.5: 0.01875,
+    5: 0.035,
+    5.5: 0.063125,
+    6: 0.09375,
+    6.5: 0.1375,
+    7: 0.18125,
+    7.5: 0.240625,
+    8: 0.3,
+    8.5: 0.38625,
+    9: 0.4725,
+    9.5: 0.58625,
+    10: 0.7,
+    10.5: 0.79875,
+    11: 0.8975,
+    11.5: 0.95,
+    12: 0.96875,
+    12.5: 0.990625,
+    13: 1.0,
+    25: 1.0,
+    25.000000001: 0.0,
+    500: 0.0,
+}
+# Same, but here in kW instead of capacity factors
+__C.POWER_CURVE_OFFSHORE_kW = {
+    # No power below 3.5 m/s
+    0: 0,
+    3.5: 0,
+    4: 70,
+    4.5: 150,
+    5: 280,
+    5.5: 505,
+    6: 750,
+    6.5: 1100,
+    7: 1450,
+    7.5: 1925,
+    8: 2400,
+    8.5: 3090,
+    9: 3780,
+    9.5: 4690,
+    10: 5600,
+    10.5: 6390,
+    11: 7180,
+    11.5: 7600,
+    12: 7750,
+    12.5: 7925,
+    # Max power at 12.5-25 m/s
+    13: 8000,
+    25: 8000,
+    # Power cut-off at 25 m/s
+    25.000000001: 0,
+    500: 0.0,
+}
