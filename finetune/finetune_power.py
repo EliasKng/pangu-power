@@ -357,7 +357,7 @@ def test_baselines(args, baseline_type):
 
     pangu_model = PanguModel(device=device).to(device)
 
-    checkpoint = torch.load(cfg.PG.BENCHMARK.PRETRAIN_24_torch, weights_only=False)
+    checkpoint = torch.load(cfg.PG.BENCHMARK.PRETRAIN_24_torch)
     pangu_model.load_state_dict(checkpoint["model"])
 
     test_baseline(
