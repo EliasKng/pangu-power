@@ -987,6 +987,8 @@ class PatchRecoveryPowerAll(nn.Module):
 
 
 class PatchRecoveryPowerUpper_2(nn.Module):
+    """Uses exactly the same PatchRecovery as Pangu, but slices out only one variable & pressure level from upper output. Adds clipped relu at the end."""
+
     def __init__(self, dim):
         super().__init__()
         """Patch recovery operation"""
