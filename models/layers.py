@@ -1065,6 +1065,70 @@ class PatchRecoveryPowerAll(nn.Module):
         return output
 
 
+class PatchRecoveryPowerAll_2(nn.Module):
+    """Is as close as possible to the original PatchRecovery, but uses both upper and lower output at once, and uses a clipped relu at the very end"""
+
+    def __init__(self, dim):
+        super().__init__()
+        """Patch recovery operation"""
+        self.patch_size = (2, 4, 4)
+        self.dim = dim  # 384
+
+        self.conv = nn.Conv1d(
+            in_channels=dim, out_channels=160, kernel_size=1, stride=1
+        )
+
+    def forward(self, x, Z, H, W):  # x: [1, 521280, 384], Z: 8, H: 181, W: 360
+        """Adaption of the original forward pass of the PatchRecivery (PatchRecovery_pretrain).
+        See the original forward pass for more details.
+        - All pressure-levels are used
+        """
+        # The inverse operation of the patch embedding operation, patch_size = (2, 4, 4) as in the original paper
+        # Reshape x back to three dimensions
+        x = torch.permute(x, (0, 2, 1))  # [1, 384, 521280]
+        x = x.view(x.shape[0], x.shape[1], Z, H, W)  # [1, 384, 8, 181, 360]
+
+        # Flatten
+        output = x.view(x.shape[0], x.shape[1], -1)  # [1, 384, 521280]
+
+        # Apply upper convolution
+        output = self.conv(output)  # [1, 32, 521280]
+
+        # Recover [724, 1440] shape
+        output = output.reshape(
+            output.shape[0],
+            5,
+            self.patch_size[0],
+            self.patch_size[1],
+            self.patch_size[2],
+            Z,
+            H,
+            W,
+        )  # [1, 5, 2, 4, 4, 8, 181, 360]
+        output = torch.permute(
+            output, (0, 1, 5, 2, 6, 3, 7, 4)
+        )  # [1, 5, 8, 2, 181, 4, 360, 4]
+        output = output.reshape(
+            output.shape[0], 5, 16, 724, 1440
+        )  # [1, 5, 16, 724, 1440]
+
+        # Remove padding
+        depth_slice = slice(0, output.shape[-3] - 1)
+        height_slice = slice(0, output.shape[-2] - 3)
+        output = output[:, :, depth_slice, height_slice, :]  # [1, 5, 15, 721, 1440]
+        output = output.view(
+            output.shape[0], 5, 1, 15, 721, 1440
+        )  # [1, 5, 1, 15, 721, 1440]
+        output = output.view(output.shape[0], 5, 15, 721, 1440)  # [1, 5, 15, 721, 1440]
+        # Slice out lowest level and first variable
+        output = output[:, 0, 0, :, :]  # [1, 1, 1, 721, 1440]
+        output = output.view(output.shape[0], 1, 721, 1440)  # [1, 1, 721, 1440]
+
+        output = clipped_relu(output)
+
+        return output
+
+
 class PatchRecoveryPowerAllWithClippedReLU(PatchRecoveryPowerAll):
     """Same as PatchRecoveryPowerAll but uses a clipped relu at the very end"""
 
@@ -1177,7 +1241,7 @@ def main():
     W = 360
 
     # Instantiate the PatchRecoveryAll class
-    model = PatchRecoveryPowerUpper_2(dim=384)
+    model = PatchRecoveryPowerAll_2(dim=384)
 
     # Call the forward method
     output = model.forward(x, Z, H, W)

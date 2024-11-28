@@ -12,6 +12,7 @@ from torch.optim.adam import Adam
 from torch.utils.data.distributed import DistributedSampler
 from torch.distributed import init_process_group, destroy_process_group
 from torch.nn.parallel import DistributedDataParallel as DDP
+import torch.multiprocessing as mp
 from torch import nn
 import os
 from random import randrange
@@ -370,10 +371,7 @@ def test_baselines(args, baseline_type):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--type_net", type=str, default="Baseline_Formula")
-    parser.add_argument("--load_my_best", type=bool, default=True)
-    parser.add_argument("--launcher", default="pytorch", help="job launcher")
-    parser.add_argument("--local-rank", type=int, default=0)
+    parser.add_argument("--type_net", type=str, default="PatchRecoveryAll_Test10")
     parser.add_argument(
         "--gpu_list",
         type=int,
@@ -392,11 +390,11 @@ if __name__ == "__main__":
     master_port = str(12357 + randrange(-10, 10, 1))
     print(f"Master port: {master_port}")
 
-    # # Spawn processes for distributed training
-    # if args.dist and torch.cuda.is_available():
-    #     mp.spawn(main, args=(args, world_size, master_port), nprocs=world_size)  # type: ignore
-    # else:
-    #     main(0, args, 1, master_port)
-    # test_best_model(args)
+    # Spawn processes for distributed training
+    if args.dist and torch.cuda.is_available():
+        mp.spawn(main, args=(args, world_size, master_port), nprocs=world_size)  # type: ignore
+    else:
+        main(0, args, 1, master_port)
+    test_best_model(args)
 
-    test_baselines(args, "formula")
+    # test_baselines(args, "formula")
