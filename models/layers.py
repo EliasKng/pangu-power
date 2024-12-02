@@ -1289,21 +1289,6 @@ class PowerConv(nn.Module):
         return output
 
 
-class PowerConvWithSigmoid(PowerConv):
-    """Replaces the last layer of PowerConv with a Sigmoid layer to better reflect the output range of wind power generation which is between [0, 1]"""
-
-    def __init__(self):
-        super().__init__()
-
-        # Replace the last ReLU layer with a Sigmoid layer
-        if isinstance(self.conv_layers[-1], nn.ReLU):
-            self.conv_layers[-1] = nn.Sigmoid()
-        else:
-            raise ValueError(
-                "The last layer is not a ReLU layer and cannot be replaced with Sigmoid."
-            )
-
-
 def clipped_relu(x):
     return torch.clamp(F.relu(x), min=0, max=1)
 
