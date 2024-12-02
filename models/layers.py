@@ -1230,7 +1230,7 @@ class PowerConv(nn.Module):
         padding=cfg.POWERCONV.PADDING,
     ):
         """
-        Initializes the PowerPanguConv class with the given parameters.
+        Initializes the PowerPanguConv class with the given parameters. Applies clipped relu function at the end.
         Args:
             in_channels (int): Number of input channels for the first convolutional layer. Default is 28. (u and v for 13 pressure levels, u10m, v10m)
             out_channels_list (list): List of output channels for each convolutional layer. Default is [1]. Could also be e.g., [64, 32, 16, 1].
@@ -1286,6 +1286,10 @@ class PowerConv(nn.Module):
 
         # Apply the sequential layers
         output = self.conv_layers(concatenated_output)
+
+        # Apply clipped ReLU
+        output = clipped_relu(output)
+
         return output
 
 
