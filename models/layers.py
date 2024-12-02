@@ -9,6 +9,7 @@ import torch.nn.functional as F
 
 from timm.models.layers import DropPath, trunc_normal_
 from collections import OrderedDict
+from era5_data.config import cfg
 
 
 class PatchEmbedding_pretrain(nn.Module):
@@ -1222,11 +1223,11 @@ class PowerConv(nn.Module):
 
     def __init__(
         self,
-        in_channels=28,
-        out_channels_list=[64, 128, 64, 1],
-        kernel_size=3,
-        stride=1,
-        padding=1,
+        in_channels=cfg.POWERCONV.IN_CHANNELS,
+        out_channels_list=cfg.POWERCONV.OUT_CHANNELS,
+        kernel_size=cfg.POWERCONV.KERNEL_SIZE,
+        stride=cfg.POWERCONV.STRIDE,
+        padding=cfg.POWERCONV.PADDING,
     ):
         """
         Initializes the PowerPanguConv class with the given parameters.
