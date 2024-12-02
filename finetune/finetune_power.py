@@ -376,7 +376,7 @@ def test_baselines(args, baseline_type):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--type_net", type=str, default="PowerConvTest")
+    parser.add_argument("--type_net", type=str, default="PanguPowerConv_Test8")
     parser.add_argument(
         "--gpu_list",
         type=int,

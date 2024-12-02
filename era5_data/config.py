@@ -141,10 +141,10 @@ __C.LORA.LORA_DROPOUT = 0.3
 # Contains hyperparameters for PanguPowerConv
 __C.POWERCONV = ConfigNamespace()
 __C.POWERCONV.IN_CHANNELS = 28
-__C.POWERCONV.OUT_CHANNELS = [64, 128, 64, 1]
-__C.POWERCONV.KERNEL_SIZE = 3
+__C.POWERCONV.OUT_CHANNELS = [64, 128, 256, 64, 1]
+__C.POWERCONV.KERNEL_SIZE = 1
 __C.POWERCONV.STRIDE = 1
-__C.POWERCONV.PADDING = 1
+__C.POWERCONV.PADDING = 0
 
 
 # Contains the power curve of Vestas Offshore V164-8000, which is used to calculate power from wind speed in the CDS dataset:
