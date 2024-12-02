@@ -21,7 +21,6 @@ from wind_fusion.pangu_pytorch.models.train_power import train
 from wind_fusion.pangu_pytorch.models.test_power import test, test_baseline
 from models.pangu_power import (
     PanguPowerPatchRecovery,
-    PanguPowerConvSigmoid,
     PanguPowerConv,
 )
 from models.pangu_model import PanguModel
@@ -84,7 +83,7 @@ def load_model(device: torch.device) -> torch.nn.Module:
         req_grad_layers = ["_conv_power_layers"]
 
     elif model_type == "PanguPowerConvSigmoid":
-        model = PanguPowerConvSigmoid(device=device).to(device)
+        model = PanguPowerConv(device=device).to(device)
         # Only finetune the last layer
         req_grad_layers = ["_conv_power_layers"]
 
@@ -377,7 +376,7 @@ def test_baselines(args, baseline_type):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--type_net", type=str, default="PatchRecoveryAll_Test11")
+    parser.add_argument("--type_net", type=str, default="PowerConvTest")
     parser.add_argument(
         "--gpu_list",
         type=int,
