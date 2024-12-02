@@ -294,6 +294,12 @@ def main(
     )
     start_epoch = 1
 
+    # Manually step the scheduler to the correct epoch
+    if start_epoch > 1:
+        for epoch in range(start_epoch - 1):
+            print(f"Step: {epoch}")
+            lr_scheduler.step(epoch)
+
     model = train(
         model,
         train_loader=train_dataloader,
