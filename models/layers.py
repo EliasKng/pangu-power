@@ -1250,21 +1250,30 @@ class PowerConv(nn.Module):
         layers = []
         current_in_channels = in_channels
 
+        # Sets kernel size and padding for the first layer
+        ks = cfg.POWERCONV.KERNEL_SIZE_FIRST
+        pdng = cfg.POWERCONV.PADDING_FIRST
+
         # Build multiple convolutional layers
         for out_channels in out_channels_list:
             layers.append(
                 nn.Conv2d(
                     in_channels=current_in_channels,
                     out_channels=out_channels,
-                    kernel_size=kernel_size,
+                    kernel_size=ks,
                     stride=stride,
-                    padding=padding,
+                    padding=pdng,
                     padding_mode="circular",
                 )
             )
+
             layers.append(nn.BatchNorm2d(out_channels))  # Add batch normalization
             layers.append(nn.ReLU())  # Add ReLU activation function
             current_in_channels = out_channels
+
+            # Set the kernel size and padding to the passed parameters after first layer
+            ks = kernel_size
+            pdng = padding
 
         self.conv_layers = nn.Sequential(*layers)  # Combine layers sequentially
 
