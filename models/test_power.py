@@ -26,7 +26,7 @@ def calculate_scores(
     output_power, target_power, lsm_expanded, mean_power_per_grid_point, target_time
 ):
     """
-    Calculates RMSE, MAPE, and ACC scores for power predictions.
+    Calculates RMSE, MAE, and ACC scores for power predictions.
     """
     scores = {}
 
@@ -39,9 +39,9 @@ def calculate_scores(
         (score.rmse(output_power_masked, target_power_masked)).detach().cpu().numpy()
     )
 
-    # Mean absolute percentage error (MAPE)
-    scores["mape"] = (
-        (score.mape(output_power_masked, target_power_masked)).detach().cpu().numpy()
+    # Mean absolute error (MAE)
+    scores["mae"] = (
+        (score.mae(output_power_masked, target_power_masked)).detach().cpu().numpy()
     )
 
     # Calculate power anomalies
@@ -75,7 +75,7 @@ def calculate_scores(
 
 def test(test_loader, model, device, res_path):
     rmse_power = dict()
-    mape_power = dict()
+    mae_power = dict()
     acc_power = dict()
 
     aux_constants = utils_data.loadAllConstants(device=device)
@@ -139,20 +139,20 @@ def test(test_loader, model, device, res_path):
 
         # Update score dictionaries
         rmse_power[target_time] = scores["rmse"]
-        mape_power[target_time] = scores["mape"]
+        mae_power[target_time] = scores["mae"]
         acc_power[target_time] = scores["acc"]
 
     # Save scores to csv
     csv_path = os.path.join(res_path, "csv")
     utils.mkdirs(csv_path)
     utils.save_error_power(csv_path, rmse_power, "rmse")
-    utils.save_error_power(csv_path, mape_power, "mape")
+    utils.save_error_power(csv_path, mae_power, "mae")
     utils.save_error_power(csv_path, acc_power, "acc")
 
 
 def test_baseline(test_loader, pangu_model, device, res_path, baseline_type: str):
     rmse_power = dict()
-    mape_power = dict()
+    mae_power = dict()
     acc_power = dict()
 
     baseline_formula = BaselineFormula(device).to(device)
@@ -238,12 +238,12 @@ def test_baseline(test_loader, pangu_model, device, res_path, baseline_type: str
 
         # Update score dictionaries
         rmse_power[target_time] = scores["rmse"]
-        mape_power[target_time] = scores["mape"]
+        mae_power[target_time] = scores["mae"]
         acc_power[target_time] = scores["acc"]
 
     # Save scores to csv
     csv_path = os.path.join(res_path, "csv")
     utils.mkdirs(csv_path)
     utils.save_error_power(csv_path, rmse_power, "rmse")
-    utils.save_error_power(csv_path, mape_power, "mape")
+    utils.save_error_power(csv_path, mae_power, "mae")
     utils.save_error_power(csv_path, acc_power, "acc")
