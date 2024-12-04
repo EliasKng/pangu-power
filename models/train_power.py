@@ -29,12 +29,13 @@ def load_land_sea_mask(device, mask_type="sea", fill_value=0):
     )
 
 
-def model_inference(
+def model_inference_power(
     model: nn.Module,
     input: torch.Tensor,
     input_surface: torch.Tensor,
     aux_constants: Dict[str, torch.Tensor],
 ) -> Tuple[torch.Tensor, torch.Tensor]:
+    """Inference code for power models. Same as inference for pangu, but only surface output is transformed."""
     output_power, output_surface = model(
         input,
         input_surface,
@@ -43,12 +44,35 @@ def model_inference(
         aux_constants["const_h"],
     )
 
-    # Transfer to the output to the original data range
+    # Transfer to the output to the original data range. Only for surface, power doesn't need to be transformed
     output_surface = utils_data.normBackDataSurface(
         output_surface, aux_constants["weather_statistics_last"]
     )
 
     return output_power, output_surface
+
+
+def model_inference_pangu(
+    model: nn.Module,
+    input: torch.Tensor,
+    input_surface: torch.Tensor,
+    aux_constants: Dict[str, torch.Tensor],
+) -> Tuple[torch.Tensor, torch.Tensor]:
+    """Inference for the Pangu model."""
+    output_upper, output_surface = model(
+        input,
+        input_surface,
+        aux_constants["weather_statistics"],
+        aux_constants["constant_maps"],
+        aux_constants["const_h"],
+    )
+
+    # Transfer to the output to the original data range
+    output_upper, output_surface = utils_data.normBackData(
+        output_upper, output_surface, aux_constants["weather_statistics_last"]
+    )
+
+    return output_upper, output_surface
 
 
 def baseline_inference(
@@ -268,7 +292,7 @@ def train_one_epoch(
 
         optimizer.zero_grad()
         model.train()
-        output_power, output_surface = model_inference(
+        output_power, output_surface = model_inference_power(
             model, input, input_surface, aux_constants
         )
         lsm_expanded = load_land_sea_mask(output_power.device)
@@ -348,7 +372,7 @@ def validate(
                 target_power_val.to(device),
             )
             print(f"(V) Processing batch {id + 1}/{len(val_loader)}")
-            output_power_val, output_surface_val = model_inference(
+            output_power_val, output_surface_val = model_inference_power(
                 model, input_val, input_surface_val, aux_constants
             )
             lsm_expanded = load_land_sea_mask(output_power_val.device)

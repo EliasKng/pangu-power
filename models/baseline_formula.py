@@ -36,12 +36,40 @@ class BaselineFormula(nn.Module):
         self,
         pangu_output_upper: Tensor,
         pangu_output_surface: Tensor,
+        use_surface: bool = False,
+        z=0,
     ) -> Tensor:
-        # Calculate wind speed from u and v components (surface level). ws = (u^2 + v^2)^0.5
-        wind_speed = torch.sqrt(
-            pangu_output_surface[:, 1, :, :] ** 2
-            + pangu_output_surface[:, 2, :, :] ** 2
-        )
+        """Calculates the power output based on wind speed, using the power curve of a wind turbine.
+
+        Parameters
+        ----------
+        pangu_output_upper : Tensor
+            Pangu output tensor for upper level
+        pangu_output_surface : Tensor
+            Panfu output tensor for surface level
+        use_surface : bool, optional
+            Specifies whether to use surface level data or upper level data, by default False
+        z : int, optional
+            Which pangu pressure level to use (if using upper level data), by default 0 -> 1000hPa
+
+        Returns
+        -------
+        Tensor
+            Calculated power output tensor
+        """
+
+        if use_surface:
+            # Calculate wind speed from surface u and v components (surface level). ws = (u^2 + v^2)^0.5
+            wind_speed = torch.sqrt(
+                pangu_output_surface[:, 1, :, :] ** 2
+                + pangu_output_surface[:, 2, :, :] ** 2
+            )
+        else:
+            # Calculate wind speed from upper u and v components (surface level). ws = (u^2 + v^2)^0.5
+            wind_speed = torch.sqrt(
+                pangu_output_upper[:, 3, z, :, :] ** 2
+                + pangu_output_upper[:, 4, z, :, :] ** 2
+            )
 
         # Calculate wind power
         output_power = self._interpolate_wind_capacity_factor(wind_speed)
