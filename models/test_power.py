@@ -3,7 +3,8 @@ from datetime import datetime
 import warnings
 from wind_fusion.pangu_pytorch.era5_data import utils, utils_data, score
 from wind_fusion.pangu_pytorch.models.train_power import (
-    model_inference,
+    model_inference_power,
+    model_inference_pangu,
     baseline_inference,
     load_land_sea_mask,
     visualize,
@@ -101,7 +102,7 @@ def test(test_loader, model, device, res_path):
         model.eval()
 
         # Inference
-        output_power_test, output_surface_test = model_inference(
+        output_power_test, output_surface_test = model_inference_power(
             model, input_test, input_surface_test, aux_constants
         )
 
@@ -185,7 +186,7 @@ def test_baseline(test_loader, pangu_model, device, res_path, baseline_type: str
             pangu_model.eval()
             # Inference
             aux_constants = utils_data.loadAllConstants(device=device)
-            output_weather_upper, output_weather_surface = model_inference(
+            output_weather_upper, output_weather_surface = model_inference_pangu(
                 pangu_model, input_test, input_surface_test, aux_constants
             )
 
