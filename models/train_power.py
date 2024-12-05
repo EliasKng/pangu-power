@@ -36,7 +36,6 @@ def model_inference_power(
     aux_constants: Dict[str, torch.Tensor],
 ) -> torch.Tensor:
     """Inference code for power models."""
-    # TODO(EliasKng): Remove output_surface. Is not required anymoer for visualization, since it is pre-generated.
     output_power = model(
         input,
         input_surface,
