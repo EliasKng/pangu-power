@@ -402,4 +402,4 @@ if __name__ == "__main__":
         main(0, args, 1, master_port)
     test_best_model(args)
 
-    test_baselines(args, "formula")
+    # test_baselines(args, "formula")
