@@ -53,7 +53,7 @@ def model_inference_pangu(
     input_surface: torch.Tensor,
     aux_constants: Dict[str, torch.Tensor],
 ) -> Tuple[torch.Tensor, torch.Tensor]:
-    """Inference for the Pangu model."""
+    """Inference for the Pangu model. Pangu outputs are normalized."""
     output_upper, output_surface = model(
         input,
         input_surface,
