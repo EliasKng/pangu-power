@@ -21,7 +21,6 @@ from wind_fusion.pangu_pytorch.models.train_power import train
 from wind_fusion.pangu_pytorch.models.test_power import test, test_baseline
 from models.pangu_power import (
     PanguPowerPatchRecovery,
-    PanguPowerConvSigmoid,
     PanguPowerConv,
 )
 from models.pangu_model import PanguModel
@@ -84,7 +83,7 @@ def load_model(device: torch.device) -> torch.nn.Module:
         req_grad_layers = ["_conv_power_layers"]
 
     elif model_type == "PanguPowerConvSigmoid":
-        model = PanguPowerConvSigmoid(device=device).to(device)
+        model = PanguPowerConv(device=device).to(device)
         # Only finetune the last layer
         req_grad_layers = ["_conv_power_layers"]
 
@@ -294,6 +293,12 @@ def main(
     )
     start_epoch = 1
 
+    # Manually step the scheduler to the correct epoch
+    if start_epoch > 1:
+        for epoch in range(start_epoch - 1):
+            print(f"Step: {epoch}")
+            lr_scheduler.step(epoch)
+
     model = train(
         model,
         train_loader=train_dataloader,
@@ -357,7 +362,7 @@ def test_baselines(args, baseline_type):
 
     pangu_model = PanguModel(device=device).to(device)
 
-    checkpoint = torch.load(cfg.PG.BENCHMARK.PRETRAIN_24_torch)
+    checkpoint = torch.load(cfg.PG.BENCHMARK.PRETRAIN_24_torch, weights_only=False)
     pangu_model.load_state_dict(checkpoint["model"])
 
     test_baseline(
@@ -371,7 +376,7 @@ def test_baselines(args, baseline_type):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--type_net", type=str, default="PatchRecoveryAll_Test11")
+    parser.add_argument("--type_net", type=str, default="Test")
     parser.add_argument(
         "--gpu_list",
         type=int,
@@ -390,7 +395,7 @@ if __name__ == "__main__":
     master_port = str(12357 + randrange(-10, 10, 1))
     print(f"Master port: {master_port}")
 
-    # Spawn processes for distributed training
+    # # Spawn processes for distributed training
     if args.dist and torch.cuda.is_available():
         mp.spawn(main, args=(args, world_size, master_port), nprocs=world_size)  # type: ignore
     else:

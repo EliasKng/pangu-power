@@ -124,14 +124,31 @@ __C.POWER.CHECKPOINT = ""
 # - PanguPowerPatchRecovery: Replaces the patch recovery layer of pangu with a new convolution that aims to predict power
 # - PanguPowerConv: Adds convolutional layers to the output of pangu to use pangus output to predict power
 # - PanguPowerConvSigmoid: Same as PanguPowerConv but with a sigmoid activation function at the end
-__C.POWER.MODEL_TYPE = "PanguPowerPatchRecovery"
+__C.POWER.MODEL_TYPE = "PanguPowerConv"
 
+
+# ***** LORA *****
+# Contains hyperparameters for LORA. Works best with MODEL_TYPE="PanguPowerPatchRecovery".
 __C.POWER.LORA = False  # Whether to use LORA. If POWER.USE_CHECKPOINT == True, the checkpoint must have been trained with LORA, too.
 
 __C.LORA = ConfigNamespace()
 __C.LORA.R = 4
 __C.LORA.LORA_ALPHA = 8
 __C.LORA.LORA_DROPOUT = 0.3
+
+
+# ***** PowerConv *****
+# Contains hyperparameters for PanguPowerConv
+__C.POWERCONV = ConfigNamespace()
+__C.POWERCONV.IN_CHANNELS = 28
+__C.POWERCONV.OUT_CHANNELS = [64, 128, 64, 1]
+__C.POWERCONV.KERNEL_SIZE = 3
+__C.POWERCONV.STRIDE = 1
+__C.POWERCONV.PADDING = 1
+# First convolutional layer may have different kernel size and padding
+__C.POWERCONV.KERNEL_SIZE_FIRST = 1
+__C.POWERCONV.PADDING_FIRST = 0
+
 
 # Contains the power curve of Vestas Offshore V164-8000, which is used to calculate power from wind speed in the CDS dataset:
 # Power curves can be found at:

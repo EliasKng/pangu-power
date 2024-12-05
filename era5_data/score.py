@@ -83,23 +83,20 @@ def rmse(pred: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
     return torch.sqrt(mse)
 
 
-def mape(pred: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+def mae(pred: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
     """
-    Computes the Mean Absolute Percentage Error (MAPE) between predicted and target tensors.
-    Tends to be very high, since there are some examples where target is zero & pred is 1.
-    Using median instead of mean yields a more robust metric, but uncommon. Therefore we use mean.
+    Computes the Mean Absolute Error (MAE) between predicted and target tensors.
 
     Args:
         output (torch.Tensor): The predicted values.
         target (torch.Tensor): The ground truth values.
 
     Returns:
-        torch.Tensor: The MAPE value as a scalar tensor.
+        torch.Tensor: The MAE value as a scalar tensor.
     """
     # Avoid division by zero by adding a small constant to the denominator
-    epsilon = 1e-8
-    mape = torch.mean(torch.abs((pred - target) / (target + epsilon))) * 100
-    return mape
+    mae = torch.mean(torch.abs(pred - target))
+    return mae
 
 
 def weighted_rmse(pred, target):

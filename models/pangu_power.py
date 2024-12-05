@@ -9,7 +9,6 @@ from models.layers import (
     PatchRecoveryPowerSurface_2,
     PatchRecovery_pretrain,
     PowerConv,
-    PowerConvWithSigmoid,
 )
 from era5_data.config import cfg
 from models.pangu_model import PanguModel
@@ -191,28 +190,6 @@ class PanguPowerConv(PanguModel):
             cfg.PG.BENCHMARK.PRETRAIN_24_torch, map_location=device, weights_only=False
         )
         self.load_state_dict(checkpoint["model"], strict=False)
-
-
-class PanguPowerConvSigmoid(PanguPowerConv):
-    """Same as PanguPowerConv but with a sigmoid activation function at the end"""
-
-    def __init__(
-        self,
-        depths: List[int] = [2, 6, 6, 2],
-        num_heads: List[int] = [6, 12, 12, 6],
-        dims: List[int] = [192, 384, 384, 192],
-        patch_size: Tuple[int, int, int] = (2, 4, 4),
-        device: Optional[torch.device] = None,
-    ) -> None:
-        super(PanguPowerConvSigmoid, self).__init__(
-            depths=depths,
-            num_heads=num_heads,
-            dims=dims,
-            patch_size=patch_size,
-            device=device,
-        )
-
-        self._conv_power_layers = PowerConvWithSigmoid()
 
 
 def main():

@@ -9,6 +9,7 @@ import torch.nn.functional as F
 
 from timm.models.layers import DropPath, trunc_normal_
 from collections import OrderedDict
+from era5_data.config import cfg
 
 
 class PatchEmbedding_pretrain(nn.Module):
@@ -1222,14 +1223,14 @@ class PowerConv(nn.Module):
 
     def __init__(
         self,
-        in_channels=28,
-        out_channels_list=[64, 128, 64, 1],
-        kernel_size=3,
-        stride=1,
-        padding=1,
+        in_channels=cfg.POWERCONV.IN_CHANNELS,
+        out_channels_list=cfg.POWERCONV.OUT_CHANNELS,
+        kernel_size=cfg.POWERCONV.KERNEL_SIZE,
+        stride=cfg.POWERCONV.STRIDE,
+        padding=cfg.POWERCONV.PADDING,
     ):
         """
-        Initializes the PowerPanguConv class with the given parameters.
+        Initializes the PowerPanguConv class with the given parameters. Applies clipped relu function at the end.
         Args:
             in_channels (int): Number of input channels for the first convolutional layer. Default is 28. (u and v for 13 pressure levels, u10m, v10m)
             out_channels_list (list): List of output channels for each convolutional layer. Default is [1]. Could also be e.g., [64, 32, 16, 1].
@@ -1249,21 +1250,30 @@ class PowerConv(nn.Module):
         layers = []
         current_in_channels = in_channels
 
+        # Sets kernel size and padding for the first layer
+        ks = cfg.POWERCONV.KERNEL_SIZE_FIRST
+        pdng = cfg.POWERCONV.PADDING_FIRST
+
         # Build multiple convolutional layers
         for out_channels in out_channels_list:
             layers.append(
                 nn.Conv2d(
                     in_channels=current_in_channels,
                     out_channels=out_channels,
-                    kernel_size=kernel_size,
+                    kernel_size=ks,
                     stride=stride,
-                    padding=padding,
+                    padding=pdng,
                     padding_mode="circular",
                 )
             )
+
             layers.append(nn.BatchNorm2d(out_channels))  # Add batch normalization
             layers.append(nn.ReLU())  # Add ReLU activation function
             current_in_channels = out_channels
+
+            # Set the kernel size and padding to the passed parameters after first layer
+            ks = kernel_size
+            pdng = padding
 
         self.conv_layers = nn.Sequential(*layers)  # Combine layers sequentially
 
@@ -1285,22 +1295,11 @@ class PowerConv(nn.Module):
 
         # Apply the sequential layers
         output = self.conv_layers(concatenated_output)
+
+        # Apply clipped ReLU
+        output = clipped_relu(output)
+
         return output
-
-
-class PowerConvWithSigmoid(PowerConv):
-    """Replaces the last layer of PowerConv with a Sigmoid layer to better reflect the output range of wind power generation which is between [0, 1]"""
-
-    def __init__(self):
-        super().__init__()
-
-        # Replace the last ReLU layer with a Sigmoid layer
-        if isinstance(self.conv_layers[-1], nn.ReLU):
-            self.conv_layers[-1] = nn.Sigmoid()
-        else:
-            raise ValueError(
-                "The last layer is not a ReLU layer and cannot be replaced with Sigmoid."
-            )
 
 
 def clipped_relu(x):
