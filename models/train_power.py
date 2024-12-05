@@ -34,10 +34,10 @@ def model_inference_power(
     input: torch.Tensor,
     input_surface: torch.Tensor,
     aux_constants: Dict[str, torch.Tensor],
-) -> Tuple[torch.Tensor, torch.Tensor]:
-    """Inference code for power models. Same as inference for pangu, but only surface output is transformed."""
-    # TODO(EliasKng): Remove output_surface. Is not required anymoer for visualization, since it is pregenerated.
-    output_power, output_surface = model(
+) -> torch.Tensor:
+    """Inference code for power models."""
+    # TODO(EliasKng): Remove output_surface. Is not required anymoer for visualization, since it is pre-generated.
+    output_power = model(
         input,
         input_surface,
         aux_constants["weather_statistics"],
@@ -45,12 +45,7 @@ def model_inference_power(
         aux_constants["const_h"],
     )
 
-    # Transfer to the output to the original data range. Only for surface, power doesn't need to be transformed
-    output_surface = utils_data.normBackDataSurface(
-        output_surface, aux_constants["weather_statistics_last"]
-    )
-
-    return output_power, output_surface
+    return output_power
 
 
 def model_inference_pangu(
@@ -330,9 +325,7 @@ def train_one_epoch(
 
         optimizer.zero_grad()
         model.train()
-        output_power, output_surface = model_inference_power(
-            model, input, input_surface, aux_constants
-        )
+        output_power = model_inference_power(model, input, input_surface, aux_constants)
         lsm_expanded = load_land_sea_mask(output_power.device)
         loss = calculate_loss(output_power, target_power, criterion, lsm_expanded)
         loss.backward()
@@ -410,7 +403,7 @@ def validate(
                 target_power_val.to(device),
             )
             print(f"(V) Processing batch {id + 1}/{len(val_loader)}")
-            output_power_val, output_surface_val = model_inference_power(
+            output_power_val = model_inference_power(
                 model, input_upper_val, input_surface_val, aux_constants
             )
             lsm_expanded = load_land_sea_mask(output_power_val.device)
