@@ -307,30 +307,33 @@ def visuailze_all(
     max_bias_ws = _calc_max_bias(output_ws, target_ws)
     max_bias_power = _calc_max_bias(output_power, target_power)
 
+    # Create figure
     fig = plt.figure(figsize=(12, 4), dpi=600)
 
+    # Wind Speed Subplots
     ax_1 = fig.add_subplot(241)
     plot_1 = ax_1.imshow(input_ws, cmap="coolwarm")
-    plt.colorbar(plot_1, ax=ax_1, fraction=0.05, pad=0.05)
-    ax_1.title.set_text("input[ws]")
+    ax_1.title.set_text("input[wind speed]")
+    plt.colorbar(plot_1, ax=ax_1, fraction=0.15, pad=0.05)
 
     ax_2 = fig.add_subplot(242)
     plot_2 = ax_2.imshow(target_ws, cmap="coolwarm")
     plt.colorbar(plot_2, ax=ax_2, fraction=0.05, pad=0.05)
-    ax_2.title.set_text("gt[ws] (Δ 24h)")
+    ax_2.title.set_text("gt[wind speed] Δ24h")
 
     ax_3 = fig.add_subplot(243)
     plot_3 = ax_3.imshow(output_ws, cmap="coolwarm")
     plt.colorbar(plot_3, ax=ax_3, fraction=0.05, pad=0.05)
-    ax_3.title.set_text("pred[ws] (Δ 24h)")
+    ax_3.title.set_text("pred[wind speed] Δ24h")
 
     ax_4 = fig.add_subplot(244)
     plot_4 = ax_4.imshow(
         output_ws - target_ws, cmap="coolwarm", vmin=-max_bias_ws, vmax=max_bias_ws
     )
     plt.colorbar(plot_4, ax=ax_4, fraction=0.05, pad=0.05)
-    ax_4.title.set_text("bias[ws]")
+    ax_4.title.set_text("bias[wind speed]")
 
+    # Power Subplots
     if input_power is not None:
         ax_5 = fig.add_subplot(245)
         plot_5 = ax_5.imshow(input_power, cmap="coolwarm")
@@ -343,11 +346,9 @@ def visuailze_all(
     ax_6.title.set_text("gt[power]")
 
     ax_7 = fig.add_subplot(247)
-    plot_7 = ax_7.imshow(
-        output_power, cmap="coolwarm"
-    )  # , levels = levels, extend = 'min')
+    plot_7 = ax_7.imshow(output_power, cmap="coolwarm")
     plt.colorbar(plot_7, ax=ax_7, fraction=0.05, pad=0.05)
-    ax_7.title.set_text("pred[power] (Δ 24h)")
+    ax_7.title.set_text("pred[power] Δ24h")
 
     ax_8 = fig.add_subplot(248)
     plot_8 = ax_8.imshow(
