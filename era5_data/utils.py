@@ -368,7 +368,7 @@ def visuailze_all(
 
 
 def load_pangu_output(step: str) -> Tuple[torch.Tensor, torch.Tensor]:
-    """Load pangu outputs for a given step.
+    """Load pangu outputs for a given step (pre-generated pangu outputs).
 
     Parameters
     ----------
