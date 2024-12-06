@@ -37,7 +37,9 @@ __C.MEAN_POWER_PATH = "/home/hk-project-test-mlperf/om1434/masterarbeit/wind_fus
 __C.POWER_CURVE_PATH = "/home/hk-project-test-mlperf/om1434/masterarbeit/wind_fusion/pangu_pytorch/data/power_curves/wind_turbine_power_curves.csv"
 
 # Pangu pre-inferenced outputs: outputs that have been pre-inferenced with Pangu and are used for visualization
-__C.PANGU_INFERENCE_OUTPUTS = "/home/hk-project-test-mlperf/om1434/masterarbeit/wind_fusion/pangu_pytorch/data/pangu_outputs"
+__C.PANGU_INFERENCE_OUTPUTS = (
+    "/lsdf/kit/imk-tro/projects/Gruppe_Quinting/om1434/pangu_outputs"
+)
 
 __C.ERA5_UPPER_LEVELS = [
     "1000",

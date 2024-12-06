@@ -102,7 +102,7 @@ def test(test_loader, model, device, res_path):
         model.eval()
 
         # Inference
-        output_power_test, output_surface_test = model_inference_power(
+        output_power_test = model_inference_power(
             model, input_upper_test, input_surface_test, aux_constants
         )
 
