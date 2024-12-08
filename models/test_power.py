@@ -151,6 +151,12 @@ def test(test_loader, model, device, res_path):
     utils.save_error_power(csv_path, mae_power, "mae")
     utils.save_error_power(csv_path, acc_power, "acc")
 
+    # Print mean scores
+    print(f"{res_path.split('/')[-2]} model scores:")
+    print(f"RMSE: {(sum(rmse_power.values()) / len(rmse_power)):.4f}")
+    print(f"MAE: {(sum(mae_power.values()) / len(mae_power)):.4f}")
+    print(f"ACC: {(sum(acc_power.values()) / len(acc_power)):.4f}")
+
 
 def test_baseline(test_loader, pangu_model, device, res_path, baseline_type: str):
     rmse_power = dict()
