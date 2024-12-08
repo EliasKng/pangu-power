@@ -410,7 +410,7 @@ if __name__ == "__main__":
     world_size = len(args.gpu_list)
     print(f"World size: {world_size if args.dist else 1}")
 
-    master_port = str(12357 + randrange(-10, 10, 1))
+    master_port = str(12357 + randrange(-20, 20, 1))
     print(f"Master port: {master_port}")
 
     # Spawn processes for distributed training
