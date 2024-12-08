@@ -10,6 +10,9 @@ from wind_fusion.pangu_pytorch.models.train_power import (
     visualize,
 )
 from wind_fusion.pangu_pytorch.models.baseline_formula import BaselineFormula
+import logging
+import torch
+from torch import nn
 
 
 warnings.filterwarnings(
@@ -74,7 +77,13 @@ def calculate_scores(
     return target_time, scores
 
 
-def test(test_loader, model, device, res_path):
+def test(
+    test_loader: torch.utils.data.DataLoader,
+    model: nn.Module,
+    device: torch.device,
+    res_path: str,
+    logger: logging.Logger,
+):
     rmse_power = dict()
     mae_power = dict()
     acc_power = dict()
@@ -152,10 +161,10 @@ def test(test_loader, model, device, res_path):
     utils.save_error_power(csv_path, acc_power, "acc")
 
     # Print mean scores
-    print(f"{res_path.split('/')[-2]} model scores:")
-    print(f"RMSE: {(sum(rmse_power.values()) / len(rmse_power)):.4f}")
-    print(f"MAE: {(sum(mae_power.values()) / len(mae_power)):.4f}")
-    print(f"ACC: {(sum(acc_power.values()) / len(acc_power)):.4f}")
+    logger.info(f"{res_path.split('/')[-2]} model scores:")
+    logger.info(f"RMSE: {(sum(rmse_power.values()) / len(rmse_power)):.4f}")
+    logger.info(f"MAE: {(sum(mae_power.values()) / len(mae_power)):.4f}")
+    logger.info(f"ACC: {(sum(acc_power.values()) / len(acc_power)):.4f}")
 
 
 def test_baseline(test_loader, pangu_model, device, res_path, baseline_type: str):
