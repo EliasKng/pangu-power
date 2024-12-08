@@ -319,7 +319,7 @@ def main(
 def test_best_model(args):
     output_path = os.path.join(cfg.PG_OUT_PATH, args.type_net, str(cfg.PG.HORIZON))
     utils.mkdirs(output_path)
-    logger = setup_logger(args.type_net, cfg.PG.HORIZON, output_path)
+    logger = setup_logger(args.type_net.split("/")[-1], cfg.PG.HORIZON, output_path)
     logger.info("Begin testing...")
     device = _get_device(0, args.gpu_list)
 
@@ -327,7 +327,7 @@ def test_best_model(args):
         os.path.join(output_path, "models/best_model.pth"),
         map_location=device,
         weights_only=False,
-    )
+    ).to(device)
 
     test_dataloader = create_dataloader(
         cfg.PG.TEST.START_TIME,
