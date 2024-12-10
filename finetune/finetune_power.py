@@ -394,7 +394,7 @@ def test_baselines(args, baseline_type):
 
 if __name__ == "__main__":
     models_to_train_or_test = [
-        "PatchRecovery/PatchRecovery_LoRA_Dist_Test11",
+        "PatchRecovery_LoRA_Dist_Test11",
     ]
 
     for type_net in models_to_train_or_test:
