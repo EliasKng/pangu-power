@@ -10,6 +10,9 @@ from wind_fusion.pangu_pytorch.models.train_power import (
     visualize,
 )
 from wind_fusion.pangu_pytorch.models.baseline_formula import BaselineFormula
+import logging
+import torch
+from torch import nn
 
 
 warnings.filterwarnings(
@@ -74,7 +77,13 @@ def calculate_scores(
     return target_time, scores
 
 
-def test(test_loader, model, device, res_path):
+def test(
+    test_loader: torch.utils.data.DataLoader,
+    model: nn.Module,
+    device: torch.device,
+    res_path: str,
+    logger: logging.Logger,
+):
     rmse_power = dict()
     mae_power = dict()
     acc_power = dict()
@@ -85,7 +94,7 @@ def test(test_loader, model, device, res_path):
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         print(f"[{timestamp}] predict on {id}")
         (
-            input_test,
+            input_upper_test,
             input_surface_test,
             input_power_test,
             target_power_test,
@@ -94,16 +103,16 @@ def test(test_loader, model, device, res_path):
             periods_test,
         ) = data
 
-        input_test, input_surface_test, target_power_test = (
-            input_test.to(device),
+        input_upper_test, input_surface_test, target_power_test = (
+            input_upper_test.to(device),
             input_surface_test.to(device),
             target_power_test.to(device),
         )
         model.eval()
 
         # Inference
-        output_power_test, output_surface_test = model_inference_power(
-            model, input_test, input_surface_test, aux_constants
+        output_power_test = model_inference_power(
+            model, input_upper_test, input_surface_test, aux_constants
         )
 
         # Apply lsm
@@ -118,8 +127,9 @@ def test(test_loader, model, device, res_path):
             output_power_test,
             target_power_test,
             input_surface_test,
-            output_surface_test,
+            input_upper_test,
             target_surface_test,
+            target_upper_test,
             target_time,
             png_path,
         )
@@ -149,6 +159,12 @@ def test(test_loader, model, device, res_path):
     utils.save_error_power(csv_path, rmse_power, "rmse")
     utils.save_error_power(csv_path, mae_power, "mae")
     utils.save_error_power(csv_path, acc_power, "acc")
+
+    # Print mean scores
+    logger.info(f"{res_path.split('/')[-2]} model scores:")
+    logger.info(f"RMSE: {(sum(rmse_power.values()) / len(rmse_power)):.4f}")
+    logger.info(f"MAE: {(sum(mae_power.values()) / len(mae_power)):.4f}")
+    logger.info(f"ACC: {(sum(acc_power.values()) / len(acc_power)):.4f}")
 
 
 def test_baseline(test_loader, pangu_model, device, res_path, baseline_type: str):
@@ -211,13 +227,18 @@ def test_baseline(test_loader, pangu_model, device, res_path, baseline_type: str
         # Visualize
         target_time = periods_test[1][0]
         png_path = os.path.join(res_path, "png")
+
+        # This can be used to pre-generate pangu outputs, which are required for some visualizations
+        # save_output_pth(output_weather_upper, output_weather_surface, target_time, res_path)
+
         utils.mkdirs(png_path)
         visualize(
             output_power_test,
             target_power_test,
             input_surface_test,
-            output_weather_surface,
+            input_test,
             target_surface_test,
+            target_upper_test,
             target_time,
             png_path,
             input_power=input_power_test,

@@ -17,12 +17,12 @@ assert __C.GLOBAL.PATH is not None
 __C.GLOBAL.SEED = 99
 __C.GLOBAL.NUM_STREADS = 16
 
+# Paths
 __C.PG_INPUT_PATH = os.path.join(__C.ROOT_DIR, "data")
 assert __C.PG_INPUT_PATH is not None
 
 __C.PG_OUT_PATH = os.path.join(__C.GLOBAL.PATH, "result")
 assert __C.PG_OUT_PATH is not None
-
 
 __C.ERA5_PATH = "/lsdf/kit/imk-tro/projects/Gruppe_Quinting/ec.era5/1959-2023_01_10-wb13-6h-1440x721.zarr"
 __C.POWER_PATH = (
@@ -35,6 +35,11 @@ __C.LSM_PATH = (
 # Mean Power path
 __C.MEAN_POWER_PATH = "/home/hk-project-test-mlperf/om1434/masterarbeit/wind_fusion/pangu_pytorch/data/aux_data/mean_power_per_grid_point.npy"
 __C.POWER_CURVE_PATH = "/home/hk-project-test-mlperf/om1434/masterarbeit/wind_fusion/pangu_pytorch/data/power_curves/wind_turbine_power_curves.csv"
+
+# Pangu pre-inferenced outputs: outputs that have been pre-inferenced with Pangu and are used for visualization
+__C.PANGU_INFERENCE_OUTPUTS = (
+    "/lsdf/kit/imk-tro/projects/Gruppe_Quinting/om1434/pangu_outputs"
+)
 
 __C.ERA5_UPPER_LEVELS = [
     "1000",
@@ -65,7 +70,6 @@ __C.PG.TRAIN.LR = 1e-4  # 5e-6  # 5e-4
 __C.PG.TRAIN.WEIGHT_DECAY = 1e-4  # 3e-6
 __C.PG.TRAIN.START_TIME = "20160101"
 __C.PG.TRAIN.END_TIME = "20161231"
-# __C.PG.TRAIN.END_TIME = "20160102"
 __C.PG.TRAIN.FREQUENCY = "6h"
 __C.PG.TRAIN.BATCH_SIZE = 1  # Per used GPU
 __C.PG.TRAIN.UPPER_WEIGHTS = [3.00, 0.60, 1.50, 0.77, 0.54]
@@ -76,7 +80,6 @@ __C.PG.TRAIN.USE_LSM = __C.PG.USE_LSM
 __C.PG.VAL = ConfigNamespace()
 __C.PG.VAL.START_TIME = "20170101"
 __C.PG.VAL.END_TIME = "20171231"
-# __C.PG.VAL.END_TIME = "20170108"
 __C.PG.VAL.FREQUENCY = "48h"
 __C.PG.VAL.BATCH_SIZE = 1
 __C.PG.VAL.INTERVAL = 1
@@ -85,10 +88,16 @@ __C.PG.VAL.USE_LSM = __C.PG.USE_LSM
 __C.PG.TEST = ConfigNamespace()
 __C.PG.TEST.START_TIME = "20180101"
 __C.PG.TEST.END_TIME = "20181231"
-# __C.PG.TEST.END_TIME = "20180108"
 __C.PG.TEST.FREQUENCY = "48h"
 __C.PG.TEST.BATCH_SIZE = 1
 __C.PG.TEST.USE_LSM = __C.PG.USE_LSM
+
+# Shorten training for testing purposes
+# __C.PG.TRAIN.EPOCHS = 5
+# __C.PG.TRAIN.END_TIME = "20160102"
+# __C.PG.VAL.END_TIME = "20170108"
+# __C.PG.TEST.END_TIME = "20180108"
+
 
 __C.PG.BENCHMARK = ConfigNamespace()
 

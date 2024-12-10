@@ -319,15 +319,17 @@ def main(
 def test_best_model(args):
     output_path = os.path.join(cfg.PG_OUT_PATH, args.type_net, str(cfg.PG.HORIZON))
     utils.mkdirs(output_path)
-    logger = setup_logger(args.type_net, cfg.PG.HORIZON, output_path)
-    logger.info("Begin testing...")
+    logger = setup_logger(args.type_net.split("/")[-1], cfg.PG.HORIZON, output_path)
+    logger.info(f"Begin testing: {args.type_net}")
     device = _get_device(0, args.gpu_list)
 
     best_model = torch.load(
         os.path.join(output_path, "models/best_model.pth"),
         map_location=device,
         weights_only=False,
-    )
+    ).to(device)
+
+    set_model_device_recursively(best_model, device)
 
     test_dataloader = create_dataloader(
         cfg.PG.TEST.START_TIME,
@@ -342,7 +344,23 @@ def test_best_model(args):
         model=best_model,
         device=device,
         res_path=output_path,
+        logger=logger,
     )
+
+
+def set_model_device_recursively(module: nn.Module, device: torch.device) -> None:
+    """
+    Recursively sets the `device` attribute for the given module and all its children. This is required becuase some masks are generated dynamically during model inference using the self.device parameter of that layers, which is set initially during model instantiation. If e.g., training and testing happens on different, the masks will be generated on the wrong device (if not set correctly by this function) which will cause an error.
+
+    Args:
+        module (nn.Module): The root module whose `device` attribute and its children's will be updated.
+        device (torch.device): The target device to set.
+    """
+    if hasattr(module, "device"):
+        module.device = device  # type: ignore
+
+    for child in module.children():
+        set_model_device_recursively(child, device)
 
 
 def test_baselines(args, baseline_type):
@@ -375,31 +393,45 @@ def test_baselines(args, baseline_type):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--type_net", type=str, default="Test")
-    parser.add_argument(
-        "--gpu_list",
-        type=int,
-        nargs="+",
-        default=[0],
-        help="List of GPUs to use for finetuning",
-    )
-    parser.add_argument("--dist", action="store_true", help="Enable distributed mode")
+    models_to_train_or_test = [
+        "PatchRecovery/PatchRecovery_LoRA_Dist_Test1",
+        "PatchRecovery/PatchRecovery_LoRA_Dist_Test2",
+        "PatchRecovery/PatchRecovery_LoRA_Dist_Test3",
+        "PatchRecovery/PatchRecovery_LoRA_Dist_Test4",
+        "PatchRecovery/PatchRecovery_LoRA_Dist_Test5",
+        "PatchRecovery/PatchRecovery_LoRA_Dist_Test6",
+        "PatchRecovery/PatchRecovery_LoRA_Dist_Test7",
+        "PatchRecovery/PatchRecovery_LoRA_Dist_Test8",
+        "PatchRecovery/PatchRecovery_LoRA_Dist_Test9",
+        "PatchRecovery/PatchRecovery_LoRA_Dist_Test10",
+    ]
 
-    args = parser.parse_args()
-    _assert_gpu_list(args.gpu_list, args.dist)
+    for type_net in models_to_train_or_test:
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--type_net", type=str, default=type_net)
+        parser.add_argument(
+            "--gpu_list",
+            type=int,
+            nargs="+",
+            default=[0],
+            help="List of GPUs to use for finetuning",
+        )
+        parser.add_argument("--dist", action="store_true", help="Enable distributed mode")
 
-    world_size = len(args.gpu_list)
-    print(f"World size: {world_size if args.dist else 1}")
+        args = parser.parse_args()
+        _assert_gpu_list(args.gpu_list, args.dist)
 
-    master_port = str(12357 + randrange(-10, 10, 1))
-    print(f"Master port: {master_port}")
+        world_size = len(args.gpu_list)
+        print(f"World size: {world_size if args.dist else 1}")
 
-    # # Spawn processes for distributed training
-    if args.dist and torch.cuda.is_available():
-        mp.spawn(main, args=(args, world_size, master_port), nprocs=world_size)  # type: ignore
-    else:
-        main(0, args, 1, master_port)
-    test_best_model(args)
+        master_port = str(12357 + randrange(-20, 20, 1))
+        print(f"Master port: {master_port}")
 
-    # test_baselines(args, "formula")
+        # Spawn processes for distributed training
+        # if args.dist and torch.cuda.is_available():
+        #     mp.spawn(main, args=(args, world_size, master_port), nprocs=world_size)  # type: ignore
+        # else:
+        #     main(0, args, 1, master_port)
+        test_best_model(args)
+
+        # test_baselines(args, "formula")
