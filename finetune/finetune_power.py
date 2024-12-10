@@ -394,16 +394,7 @@ def test_baselines(args, baseline_type):
 
 if __name__ == "__main__":
     models_to_train_or_test = [
-        "PatchRecovery/PatchRecovery_LoRA_Dist_Test1",
-        "PatchRecovery/PatchRecovery_LoRA_Dist_Test2",
-        "PatchRecovery/PatchRecovery_LoRA_Dist_Test3",
-        "PatchRecovery/PatchRecovery_LoRA_Dist_Test4",
-        "PatchRecovery/PatchRecovery_LoRA_Dist_Test5",
-        "PatchRecovery/PatchRecovery_LoRA_Dist_Test6",
-        "PatchRecovery/PatchRecovery_LoRA_Dist_Test7",
-        "PatchRecovery/PatchRecovery_LoRA_Dist_Test8",
-        "PatchRecovery/PatchRecovery_LoRA_Dist_Test9",
-        "PatchRecovery/PatchRecovery_LoRA_Dist_Test10",
+        "PatchRecovery/PatchRecovery_LoRA_Dist_Test11",
     ]
 
     for type_net in models_to_train_or_test:
@@ -416,7 +407,9 @@ if __name__ == "__main__":
             default=[0],
             help="List of GPUs to use for finetuning",
         )
-        parser.add_argument("--dist", action="store_true", help="Enable distributed mode")
+        parser.add_argument(
+            "--dist", action="store_true", help="Enable distributed mode"
+        )
 
         args = parser.parse_args()
         _assert_gpu_list(args.gpu_list, args.dist)
@@ -428,10 +421,10 @@ if __name__ == "__main__":
         print(f"Master port: {master_port}")
 
         # Spawn processes for distributed training
-        # if args.dist and torch.cuda.is_available():
-        #     mp.spawn(main, args=(args, world_size, master_port), nprocs=world_size)  # type: ignore
-        # else:
-        #     main(0, args, 1, master_port)
+        if args.dist and torch.cuda.is_available():
+            mp.spawn(main, args=(args, world_size, master_port), nprocs=world_size)  # type: ignore
+        else:
+            main(0, args, 1, master_port)
         test_best_model(args)
 
         # test_baselines(args, "formula")
