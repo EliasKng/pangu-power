@@ -141,9 +141,9 @@ __C.POWER.MODEL_TYPE = "PanguPowerPatchRecovery"
 __C.POWER.LORA = True  # Whether to use LORA. If POWER.USE_CHECKPOINT == True, the checkpoint must have been trained with LORA, too.
 
 __C.LORA = ConfigNamespace()
-__C.LORA.R = 4
-__C.LORA.LORA_ALPHA = 8
-__C.LORA.LORA_DROPOUT = 0.1
+__C.LORA.R = 2
+__C.LORA.LORA_ALPHA = 4
+__C.LORA.LORA_DROPOUT = 0.3
 
 
 # ***** PowerConv *****
