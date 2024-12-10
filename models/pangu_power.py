@@ -91,20 +91,10 @@ class PanguPowerPatchRecovery(PanguModel):
         pretrained_dict = checkpoint["model"]
         model_dict = self.state_dict()
 
-        # Filter out keys in pretrained_dict & rename to _output_weather_layer
-        pretrained_dict = {
-            (
-                k.replace("_output_layer", "_output_weather_layer")
-                if "_output_layer" in k
-                else k
-            ): v
-            for k, v in pretrained_dict.items()
-        }
-
-        # Update the model's state_dict except the _output_layer
+        # Update the model's state_dict
         model_dict.update(pretrained_dict)
 
-        # Remove keys from model_dict that contain _output_layer
+        # Remove keys from model_dict that contain _output_layer, since those are not present in this model
         keys_to_remove = [k for k in model_dict.keys() if "_output_layer" in k]
         for k in keys_to_remove:
             del model_dict[k]
