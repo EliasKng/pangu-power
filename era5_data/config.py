@@ -143,7 +143,7 @@ __C.POWER.LORA = True  # Whether to use LORA. If POWER.USE_CHECKPOINT == True, t
 __C.LORA = ConfigNamespace()
 __C.LORA.R = 4
 __C.LORA.LORA_ALPHA = 8
-__C.LORA.LORA_DROPOUT = 0.2
+__C.LORA.LORA_DROPOUT = 0.1
 
 
 # ***** PowerConv *****
