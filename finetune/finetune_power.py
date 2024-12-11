@@ -291,7 +291,7 @@ def main(
     lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(
         optimizer, milestones=[25, 50], gamma=0.5
     )
-    start_epoch = 29
+    start_epoch = args.start_epoch
 
     # Manually step the scheduler to the correct epoch
     if start_epoch > 1:
@@ -409,6 +409,9 @@ if __name__ == "__main__":
         )
         parser.add_argument(
             "--dist", action="store_true", help="Enable distributed mode"
+        )
+        parser.add_argument(
+            "--start_epoch", type=int, default=1, help="Starting epoch for training"
         )
 
         args = parser.parse_args()
