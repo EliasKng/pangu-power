@@ -291,7 +291,7 @@ def main(
     lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(
         optimizer, milestones=[25, 50], gamma=0.5
     )
-    start_epoch = 1
+    start_epoch = 29
 
     # Manually step the scheduler to the correct epoch
     if start_epoch > 1:
@@ -394,7 +394,7 @@ def test_baselines(args, baseline_type):
 
 if __name__ == "__main__":
     models_to_train_or_test = [
-        "MA_3_LoRA_Test4",
+        "PatchRecovery_LoRA_Dist_Test12",
     ]
 
     for type_net in models_to_train_or_test:
