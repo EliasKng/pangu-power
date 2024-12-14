@@ -399,7 +399,7 @@ def test_baselines(args, baseline_type):
 
 if __name__ == "__main__":
     models_to_train_or_test = [
-        "Test",
+        "MA_2_PR_Test1",
     ]
 
     for type_net in models_to_train_or_test:

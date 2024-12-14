@@ -5,7 +5,7 @@ from typing import List, Tuple, Optional, Union
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import torch
 from models.layers import (
-    PatchRecoveryPowerSurface_2,
+    PatchRecoveryPowerAllWithClippedReLU,
     PowerConv,
 )
 from era5_data.config import cfg
@@ -35,7 +35,7 @@ class PanguPowerPatchRecovery(PanguModel):
         del self._output_layer
 
         # Replace the output layer with new PatchRecovery
-        self._output_power_layer = PatchRecoveryPowerSurface_2(dims[-2])
+        self._output_power_layer = PatchRecoveryPowerAllWithClippedReLU(dims[-2])
 
     def forward(
         self,
