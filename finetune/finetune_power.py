@@ -77,6 +77,11 @@ def load_model(device: torch.device) -> torch.nn.Module:
         # Only finetune the last layer
         req_grad_layers = ["_output_power_layer"]
 
+    elif model_type == "PanguPowerPatchRecoveryUpsample":
+        model = PanguPowerPatchRecovery(device=device).to(device)
+        # Finetune last two layers (output_power_layer and upsample)
+        req_grad_layers = ["_output_power_layer", "upsample"]
+
     elif model_type == "PanguPowerConv":
         model = PanguPowerConv(device=device).to(device)
         # Only finetune the last layer
@@ -88,7 +93,7 @@ def load_model(device: torch.device) -> torch.nn.Module:
         req_grad_layers = ["_conv_power_layers"]
 
     else:
-        raise ValueError("Model not found")
+        raise ValueError(f"Model not found: {model_type}")
 
     # Load specified checkpoint
     if cfg.POWER.USE_CHECKPOINT:
@@ -394,7 +399,7 @@ def test_baselines(args, baseline_type):
 
 if __name__ == "__main__":
     models_to_train_or_test = [
-        "MA_3_LoRA_Test8",
+        "Test",
     ]
 
     for type_net in models_to_train_or_test:
