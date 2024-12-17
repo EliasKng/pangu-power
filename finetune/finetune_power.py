@@ -77,6 +77,11 @@ def load_model(device: torch.device) -> torch.nn.Module:
         # Only finetune the last layer
         req_grad_layers = ["_output_power_layer"]
 
+    elif model_type == "PanguPowerPatchRecoveryUpsample":
+        model = PanguPowerPatchRecovery(device=device).to(device)
+        # Finetune last two layers (output_power_layer and upsample)
+        req_grad_layers = ["_output_power_layer", "upsample"]
+
     elif model_type == "PanguPowerConv":
         model = PanguPowerConv(device=device).to(device)
         # Only finetune the last layer
@@ -88,7 +93,7 @@ def load_model(device: torch.device) -> torch.nn.Module:
         req_grad_layers = ["_conv_power_layers"]
 
     else:
-        raise ValueError("Model not found")
+        raise ValueError(f"Model not found: {model_type}")
 
     # Load specified checkpoint
     if cfg.POWER.USE_CHECKPOINT:
@@ -291,7 +296,7 @@ def main(
     lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(
         optimizer, milestones=[25, 50], gamma=0.5
     )
-    start_epoch = 1
+    start_epoch = args.start_epoch
 
     # Manually step the scheduler to the correct epoch
     if start_epoch > 1:
@@ -394,16 +399,7 @@ def test_baselines(args, baseline_type):
 
 if __name__ == "__main__":
     models_to_train_or_test = [
-        "PatchRecovery/PatchRecovery_LoRA_Dist_Test1",
-        "PatchRecovery/PatchRecovery_LoRA_Dist_Test2",
-        "PatchRecovery/PatchRecovery_LoRA_Dist_Test3",
-        "PatchRecovery/PatchRecovery_LoRA_Dist_Test4",
-        "PatchRecovery/PatchRecovery_LoRA_Dist_Test5",
-        "PatchRecovery/PatchRecovery_LoRA_Dist_Test6",
-        "PatchRecovery/PatchRecovery_LoRA_Dist_Test7",
-        "PatchRecovery/PatchRecovery_LoRA_Dist_Test8",
-        "PatchRecovery/PatchRecovery_LoRA_Dist_Test9",
-        "PatchRecovery/PatchRecovery_LoRA_Dist_Test10",
+        "MA_2_PR_Test1",
     ]
 
     for type_net in models_to_train_or_test:
@@ -416,7 +412,12 @@ if __name__ == "__main__":
             default=[0],
             help="List of GPUs to use for finetuning",
         )
-        parser.add_argument("--dist", action="store_true", help="Enable distributed mode")
+        parser.add_argument(
+            "--dist", action="store_true", help="Enable distributed mode"
+        )
+        parser.add_argument(
+            "--start_epoch", type=int, default=1, help="Starting epoch for training"
+        )
 
         args = parser.parse_args()
         _assert_gpu_list(args.gpu_list, args.dist)
@@ -428,10 +429,10 @@ if __name__ == "__main__":
         print(f"Master port: {master_port}")
 
         # Spawn processes for distributed training
-        # if args.dist and torch.cuda.is_available():
-        #     mp.spawn(main, args=(args, world_size, master_port), nprocs=world_size)  # type: ignore
-        # else:
-        #     main(0, args, 1, master_port)
+        if args.dist and torch.cuda.is_available():
+            mp.spawn(main, args=(args, world_size, master_port), nprocs=world_size)  # type: ignore
+        else:
+            main(0, args, 1, master_port)
         test_best_model(args)
 
         # test_baselines(args, "formula")

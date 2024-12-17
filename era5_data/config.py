@@ -131,9 +131,10 @@ __C.POWER.CHECKPOINT = ""
 # Specify the type of model to be initialized, must match the model type in the checkpoint
 # Can be:
 # - PanguPowerPatchRecovery: Replaces the patch recovery layer of pangu with a new convolution that aims to predict power
+# - PanguPowerPatchRecoveryUpsample: Same as PanguPowerPatchRecovery but upsample layer weights are unfrozen
 # - PanguPowerConv: Adds convolutional layers to the output of pangu to use pangus output to predict power
 # - PanguPowerConvSigmoid: Same as PanguPowerConv but with a sigmoid activation function at the end
-__C.POWER.MODEL_TYPE = "PanguPowerConv"
+__C.POWER.MODEL_TYPE = "PanguPowerPatchRecoveryUpsample"
 
 
 # ***** LORA *****
@@ -141,9 +142,9 @@ __C.POWER.MODEL_TYPE = "PanguPowerConv"
 __C.POWER.LORA = False  # Whether to use LORA. If POWER.USE_CHECKPOINT == True, the checkpoint must have been trained with LORA, too.
 
 __C.LORA = ConfigNamespace()
-__C.LORA.R = 4
-__C.LORA.LORA_ALPHA = 8
-__C.LORA.LORA_DROPOUT = 0.3
+__C.LORA.R = 16
+__C.LORA.LORA_ALPHA = 32
+__C.LORA.LORA_DROPOUT = 0.1
 
 
 # ***** PowerConv *****
