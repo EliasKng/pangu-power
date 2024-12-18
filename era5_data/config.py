@@ -65,16 +65,16 @@ __C.PG.HORIZON = 24  # Forecast horizon
 __C.PG.USE_LSM = True
 
 __C.PG.TRAIN = ConfigNamespace()
-__C.PG.TRAIN.EPOCHS = 200
+__C.PG.TRAIN.EPOCHS = 100
 __C.PG.TRAIN.LR = 1e-4  # 5e-6  # 5e-4
 __C.PG.TRAIN.WEIGHT_DECAY = 1e-4  # 3e-6
-__C.PG.TRAIN.START_TIME = "20161130"
+__C.PG.TRAIN.START_TIME = "20160101"
 __C.PG.TRAIN.END_TIME = "20161231"
 __C.PG.TRAIN.FREQUENCY = "6h"
 __C.PG.TRAIN.BATCH_SIZE = 1  # Per used GPU
 __C.PG.TRAIN.UPPER_WEIGHTS = [3.00, 0.60, 1.50, 0.77, 0.54]
 __C.PG.TRAIN.SURFACE_WEIGHTS = [1.50, 0.77, 0.66, 3.00]
-__C.PG.TRAIN.SAVE_INTERVAL = 20
+__C.PG.TRAIN.SAVE_INTERVAL = 5
 __C.PG.TRAIN.USE_LSM = __C.PG.USE_LSM
 
 __C.PG.VAL = ConfigNamespace()
@@ -82,7 +82,7 @@ __C.PG.VAL.START_TIME = "20170101"
 __C.PG.VAL.END_TIME = "20171231"
 __C.PG.VAL.FREQUENCY = "48h"
 __C.PG.VAL.BATCH_SIZE = 1
-__C.PG.VAL.INTERVAL = 20
+__C.PG.VAL.INTERVAL = 1
 __C.PG.VAL.USE_LSM = __C.PG.USE_LSM
 
 __C.PG.TEST = ConfigNamespace()
@@ -125,9 +125,9 @@ __C.PG.BENCHMARK.PRETRAIN_24_torch = os.path.join(
 __C.POWER = ConfigNamespace()
 
 # Specifies if the model should be trained from scratch (pretrained pangu weights will be used) or if a checkpoint should be used.
-__C.POWER.USE_CHECKPOINT = True
+__C.POWER.USE_CHECKPOINT = False
 # If POWER.USE_CHECKPOINT == True: Select the checkpoint to start the training from. The model is loaded from the checkpoint.
-__C.POWER.CHECKPOINT = "/home/hk-project-test-mlperf/om1434/masterarbeit/wind_fusion/pangu_pytorch/result/DA_1_PR_Test2/24/models/best_checkpoint.pth"
+__C.POWER.CHECKPOINT = ""
 # Specify the type of model to be initialized, must match the model type in the checkpoint
 # Can be:
 # - PanguPowerPatchRecovery: Replaces the patch recovery layer of pangu with a new convolution that aims to predict power
