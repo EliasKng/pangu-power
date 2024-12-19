@@ -249,6 +249,12 @@ def train(
         if rank == 0 and i % cfg.PG.TRAIN.SAVE_INTERVAL == 0:
             save_model_checkpoint(model, optimizer, lr_scheduler, res_path, i)
 
+        # Save the last model checkpoint
+        if rank == 0:
+            save_model_checkpoint(
+                model, optimizer, lr_scheduler, res_path, i, type="last"
+            )
+
         # Validate on all ranks (on purpose, since barrier times out if only rank 0 validates)
         # TODO(EliasKng): Use DistributedSampler to spread validation across all ranks, then calculate mean loss
         if i % cfg.PG.VAL.INTERVAL == 0:
@@ -345,8 +351,31 @@ def save_model_checkpoint(
     lr_scheduler: torch.optim.lr_scheduler.MultiStepLR,
     res_path: str,
     epoch: int,
-    is_best: bool = False,
+    type: str = "train",
 ) -> None:
+    """
+    Save the model checkpoint to a specified directory.
+
+    Parameters
+    ----------
+    model : nn.Module
+        The model to be saved.
+    optimizer : torch.optim.Optimizer
+        The optimizer associated with the model.
+    lr_scheduler : torch.optim.lr_scheduler.MultiStepLR
+        The learning rate scheduler associated with the model.
+    res_path : str
+        The directory path where the model checkpoint will be saved.
+    epoch : int
+        The current epoch number.
+    type : str, optional
+        The type of checkpoint to save (only adapts the checkpoint name). Options are "train", "best", or "last".
+        Default is "train".
+
+    Returns
+    -------
+    None
+    """
     model_save_path = os.path.join(res_path, "models")
     utils.mkdirs(model_save_path)
     save_file = {
@@ -356,12 +385,14 @@ def save_model_checkpoint(
         "epoch": epoch,
     }
     # Use different file name for best model so the last one will be overwritten
-    if is_best:
+    if type == "best":
         file_name = "best_checkpoint.pth"
-    else:
+    elif type == "train":
         file_name = "train_{}.pth".format(epoch)
+    elif type == "last":
+        file_name = "last.pth"
     torch.save(save_file, os.path.join(model_save_path, file_name))
-    print("Model saved at epoch {}".format(epoch))
+    print(f"Model saved at epoch {epoch}: {file_name}")
 
 
 def validate(
@@ -435,7 +466,7 @@ def validate(
             # Save both a deepcopy and statedict of the best model (deepcopy is for testing, statedict for re-using model)
             if rank == 0:
                 save_model_checkpoint(
-                    model, optimizer, lr_scheduler, res_path, epoch, is_best=True
+                    model, optimizer, lr_scheduler, res_path, epoch, type="best"
                 )
                 torch.save(
                     best_model, os.path.join(res_path, "models", "best_model.pth")
