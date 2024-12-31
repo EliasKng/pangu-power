@@ -68,7 +68,7 @@ __C.PG.TRAIN = ConfigNamespace()
 __C.PG.TRAIN.EPOCHS = 100
 __C.PG.TRAIN.LR = 1e-4  # 5e-6  # 5e-4
 __C.PG.TRAIN.WEIGHT_DECAY = 1e-4  # 3e-6
-__C.PG.TRAIN.START_TIME = "20160101"
+__C.PG.TRAIN.START_TIME = "20140101"
 __C.PG.TRAIN.END_TIME = "20161231"
 __C.PG.TRAIN.FREQUENCY = "6h"
 __C.PG.TRAIN.BATCH_SIZE = 1  # Per used GPU
@@ -134,7 +134,7 @@ __C.POWER.CHECKPOINT = ""
 # - PanguPowerPatchRecoveryUpsample: Same as PanguPowerPatchRecovery but upsample layer weights are unfrozen
 # - PanguPowerConv: Adds convolutional layers to the output of pangu to use pangus output to predict power
 # - PanguPowerConvSigmoid: Same as PanguPowerConv but with a sigmoid activation function at the end
-__C.POWER.MODEL_TYPE = "PanguPowerPatchRecovery"
+__C.POWER.MODEL_TYPE = "PanguPowerConv"
 
 
 # ***** LORA *****
@@ -156,8 +156,8 @@ __C.POWERCONV.KERNEL_SIZE = 3
 __C.POWERCONV.STRIDE = 1
 __C.POWERCONV.PADDING = 1
 # First convolutional layer may have different kernel size and padding
-__C.POWERCONV.KERNEL_SIZE_FIRST = 1
-__C.POWERCONV.PADDING_FIRST = 0
+__C.POWERCONV.KERNEL_SIZE_FIRST = 3
+__C.POWERCONV.PADDING_FIRST = 1
 
 
 # Contains the power curve of Vestas Offshore V164-8000, which is used to calculate power from wind speed in the CDS dataset:
