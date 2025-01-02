@@ -65,16 +65,16 @@ __C.PG.HORIZON = 24  # Forecast horizon
 __C.PG.USE_LSM = True
 
 __C.PG.TRAIN = ConfigNamespace()
-__C.PG.TRAIN.EPOCHS = 1600
+__C.PG.TRAIN.EPOCHS = 100
 __C.PG.TRAIN.LR = 1e-4  # 5e-6  # 5e-4
 __C.PG.TRAIN.WEIGHT_DECAY = 1e-4  # 3e-6
-__C.PG.TRAIN.START_TIME = "20161224"
+__C.PG.TRAIN.START_TIME = "20140101"
 __C.PG.TRAIN.END_TIME = "20161231"
 __C.PG.TRAIN.FREQUENCY = "6h"
 __C.PG.TRAIN.BATCH_SIZE = 1  # Per used GPU
 __C.PG.TRAIN.UPPER_WEIGHTS = [3.00, 0.60, 1.50, 0.77, 0.54]
 __C.PG.TRAIN.SURFACE_WEIGHTS = [1.50, 0.77, 0.66, 3.00]
-__C.PG.TRAIN.SAVE_INTERVAL = 40
+__C.PG.TRAIN.SAVE_INTERVAL = 5
 __C.PG.TRAIN.USE_LSM = __C.PG.USE_LSM
 
 __C.PG.VAL = ConfigNamespace()
@@ -82,7 +82,7 @@ __C.PG.VAL.START_TIME = "20170101"
 __C.PG.VAL.END_TIME = "20171231"
 __C.PG.VAL.FREQUENCY = "48h"
 __C.PG.VAL.BATCH_SIZE = 1
-__C.PG.VAL.INTERVAL = 40
+__C.PG.VAL.INTERVAL = 1
 __C.PG.VAL.USE_LSM = __C.PG.USE_LSM
 
 __C.PG.TEST = ConfigNamespace()
@@ -134,16 +134,16 @@ __C.POWER.CHECKPOINT = ""
 # - PanguPowerPatchRecoveryUpsample: Same as PanguPowerPatchRecovery but upsample layer weights are unfrozen
 # - PanguPowerConv: Adds convolutional layers to the output of pangu to use pangus output to predict power
 # - PanguPowerConvSigmoid: Same as PanguPowerConv but with a sigmoid activation function at the end
-__C.POWER.MODEL_TYPE = "PanguPowerConv"
+__C.POWER.MODEL_TYPE = "PanguPowerPatchRecovery"
 
 
 # ***** LORA *****
 # Contains hyperparameters for LORA. Works best with MODEL_TYPE="PanguPowerPatchRecovery".
-__C.POWER.LORA = False  # Whether to use LORA. If POWER.USE_CHECKPOINT == True, the checkpoint must have been trained with LORA, too.
+__C.POWER.LORA = True  # Whether to use LORA. If POWER.USE_CHECKPOINT == True, the checkpoint must have been trained with LORA, too.
 
 __C.LORA = ConfigNamespace()
-__C.LORA.R = 16
-__C.LORA.LORA_ALPHA = 32
+__C.LORA.R = 1
+__C.LORA.LORA_ALPHA = 2
 __C.LORA.LORA_DROPOUT = 0.1
 
 
