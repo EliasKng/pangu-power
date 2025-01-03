@@ -403,7 +403,7 @@ def test_baselines(args, baseline_type):
 
 if __name__ == "__main__":
     models_to_train_or_test = [
-        "DA_1_Lo_Test8",
+        "DA_1_Lo_Test7",
     ]
 
     for type_net in models_to_train_or_test:
