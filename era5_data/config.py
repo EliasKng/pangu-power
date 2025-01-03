@@ -68,7 +68,7 @@ __C.PG.TRAIN = ConfigNamespace()
 __C.PG.TRAIN.EPOCHS = 100
 __C.PG.TRAIN.LR = 1e-4  # 5e-6  # 5e-4
 __C.PG.TRAIN.WEIGHT_DECAY = 1e-4  # 3e-6
-__C.PG.TRAIN.START_TIME = "20160101"
+__C.PG.TRAIN.START_TIME = "20140101"
 __C.PG.TRAIN.END_TIME = "20161231"
 __C.PG.TRAIN.FREQUENCY = "6h"
 __C.PG.TRAIN.BATCH_SIZE = 1  # Per used GPU
@@ -142,8 +142,8 @@ __C.POWER.MODEL_TYPE = "PanguPowerPatchRecovery"
 __C.POWER.LORA = True  # Whether to use LORA. If POWER.USE_CHECKPOINT == True, the checkpoint must have been trained with LORA, too.
 
 __C.LORA = ConfigNamespace()
-__C.LORA.R = 1
-__C.LORA.LORA_ALPHA = 2
+__C.LORA.R = 16
+__C.LORA.LORA_ALPHA = 32
 __C.LORA.LORA_DROPOUT = 0.1
 
 
