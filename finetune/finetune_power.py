@@ -12,7 +12,6 @@ from torch.optim.adam import Adam
 from torch.utils.data.distributed import DistributedSampler
 from torch.distributed import init_process_group, destroy_process_group
 from torch.nn.parallel import DistributedDataParallel as DDP
-import torch.multiprocessing as mp
 from torch import nn
 import os
 from random import randrange
@@ -314,6 +313,18 @@ def main(
             print(f"Step: {epoch}")
             lr_scheduler.step(epoch)
 
+    # Save model before training
+    model_save_path = os.path.join(output_path, "models")
+    utils.mkdirs(model_save_path)
+    save_file = {
+        "model": model.module.state_dict(),
+        "optimizer": optimizer.state_dict(),
+        "lr_scheduler": lr_scheduler.state_dict(),
+        "epoch": start_epoch,
+    }
+    torch.save(save_file, os.path.join(model_save_path, "best_checkpoint.pth"))
+    print(f"Model saved at epoch {start_epoch}: best_checkpoint.pth")
+
     model = train(
         model,
         train_loader=train_dataloader,
@@ -409,7 +420,7 @@ def test_baselines(args, baseline_type):
 
 if __name__ == "__main__":
     models_to_train_or_test = [
-        "Test",
+        "PowerConvDirect",
     ]
 
     for type_net in models_to_train_or_test:
@@ -439,10 +450,10 @@ if __name__ == "__main__":
         print(f"Master port: {master_port}")
 
         # Spawn processes for distributed training
-        if args.dist and torch.cuda.is_available():
-            mp.spawn(main, args=(args, world_size, master_port), nprocs=world_size)  # type: ignore
-        else:
-            main(0, args, 1, master_port)
+        # if args.dist and torch.cuda.is_available():
+        #     mp.spawn(main, args=(args, world_size, master_port), nprocs=world_size)  # type: ignore
+        # else:
+        #     main(0, args, 1, master_port)
         test_best_model(args)
 
         # test_baselines(args, "formula")

@@ -125,9 +125,9 @@ __C.PG.BENCHMARK.PRETRAIN_24_torch = os.path.join(
 __C.POWER = ConfigNamespace()
 
 # Specifies if the model should be trained from scratch (pretrained pangu weights will be used) or if a checkpoint should be used.
-__C.POWER.USE_CHECKPOINT = False
+__C.POWER.USE_CHECKPOINT = True
 # If POWER.USE_CHECKPOINT == True: Select the checkpoint to start the training from. The model is loaded from the checkpoint.
-__C.POWER.CHECKPOINT = ""
+__C.POWER.CHECKPOINT = "/home/hk-project-test-mlperf/om1434/masterarbeit/wind_fusion/pangu_pytorch/result/PowerConv/PanguPowerConv_Test11/24/models/best_checkpoint.pth"
 # Specify the type of model to be initialized, must match the model type in the checkpoint
 # Can be:
 # - PanguPowerPatchRecovery: Replaces the patch recovery layer of pangu with a new convolution that aims to predict power
@@ -152,7 +152,7 @@ __C.LORA.LORA_DROPOUT = 0.1
 # Contains hyperparameters for PanguPowerConv
 __C.POWERCONV = ConfigNamespace()
 __C.POWERCONV.IN_CHANNELS = 28
-__C.POWERCONV.OUT_CHANNELS = [64, 1]
+__C.POWERCONV.OUT_CHANNELS = [64, 128, 64, 1]
 __C.POWERCONV.KERNEL_SIZE = 3
 __C.POWERCONV.STRIDE = 1
 __C.POWERCONV.PADDING = 1
