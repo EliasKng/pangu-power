@@ -367,6 +367,138 @@ def visuailze_all(
         plt.savefig(fname=os.path.join(path, f"{step}_power_epoch{epoch}.pdf"))
     plt.close()
 
+    # Plot histograms of output_power - target_power and output_ws - target_ws
+    fig, (ax1, ax2, ax3, ax4, ax5, ax6, ax7, ax8) = plt.subplots(1, 8, figsize=(48, 4))
+
+    # Histogram for power bias
+    power_bias = (output_power - target_power).flatten().cpu().numpy()
+    ax1.hist(power_bias, bins=50, color="blue", alpha=0.7)
+    ax1.set_title("Power Bias Histogram")
+    ax1.set_xlabel("Bias")
+    ax1.set_ylabel("Frequency")
+
+    # Histogram for power bias with values within epsilon of 0 masked out
+    epsilon = 0.005
+    power_bias_nonzero = power_bias[np.abs(power_bias) > epsilon]
+    ax2.hist(power_bias_nonzero, bins=50, color="green", alpha=0.7)
+    ax2.set_title("Power Bias Histogram (Non-zero)")
+    ax2.set_xlabel("Bias")
+    ax2.set_ylabel("Frequency")
+
+    # Histogram for wind speed bias
+    ws_bias = (output_ws - target_ws).flatten().cpu().numpy()
+    ax3.hist(ws_bias, bins=50, color="red", alpha=0.7)
+    ax3.set_title("Wind Speed Bias Histogram")
+    ax3.set_xlabel("Bias")
+    ax3.set_ylabel("Frequency")
+
+    # Histogram for normalized wind speed bias
+    max_ws_bias = np.nanmax(np.abs(ws_bias))
+    normalized_ws_bias = ws_bias / max_ws_bias
+    ax4.hist(normalized_ws_bias, bins=50, color="purple", alpha=0.7)
+    ax4.set_title("Normalized Wind Speed Bias Histogram")
+    ax4.set_xlabel("Normalized Bias")
+    ax4.set_ylabel("Frequency")
+
+    # Combined histogram for power bias (non-zero) and normalized wind speed bias
+    ax5.hist(
+        power_bias_nonzero,
+        bins=50,
+        color="green",
+        alpha=0.7,
+        label="Power Bias (Non-zero)",
+    )
+    ax5.hist(
+        normalized_ws_bias,
+        bins=50,
+        color="purple",
+        alpha=0.7,
+        label="Normalized Wind Speed Bias",
+    )
+    ax5.set_title("Combined Histogram")
+    ax5.set_xlabel("Bias")
+    ax5.set_ylabel("Frequency")
+    ax5.legend()
+
+    # Histogram for normalized wind speed bias with same mean and variance as power bias (non-zero)
+    mean_power_bias = np.nanmean(power_bias_nonzero)
+    std_power_bias = np.nanstd(power_bias_nonzero)
+    normalized_ws_bias_scaled = (
+        normalized_ws_bias - np.nanmean(normalized_ws_bias)
+    ) / np.nanstd(normalized_ws_bias)
+    normalized_ws_bias_scaled = (
+        normalized_ws_bias_scaled * std_power_bias + mean_power_bias
+    )
+    ax6.hist(
+        normalized_ws_bias_scaled,
+        bins=50,
+        color="orange",
+        alpha=0.7,
+        label="Normalized WS Bias (Scaled)",
+    )
+    ax6.hist(
+        power_bias_nonzero,
+        bins=50,
+        color="green",
+        alpha=0.7,
+        label="Power Bias (Non-zero)",
+    )
+    ax6.set_title("Normalized WS Bias (Scaled) Histogram")
+    ax6.set_xlabel("Scaled Bias")
+    ax6.set_ylabel("Frequency")
+    ax6.legend()
+
+    # Histogram for normalized wind speed bias (scaled) with same mask as power bias (non-zero)
+    normalized_ws_bias_scaled_nonzero = normalized_ws_bias_scaled[
+        np.abs(power_bias) > epsilon
+    ]
+    ax7.hist(
+        normalized_ws_bias_scaled_nonzero,
+        bins=50,
+        color="cyan",
+        alpha=0.7,
+        label="Normalized WS Bias (Scaled, Non-zero)",
+    )
+    ax7.hist(
+        power_bias_nonzero,
+        bins=50,
+        color="green",
+        alpha=0.7,
+        label="Power Bias (Non-zero)",
+    )
+    ax7.set_title("Normalized WS Bias (Scaled, Non-zero) Histogram")
+    ax7.set_xlabel("Scaled Bias")
+    ax7.set_ylabel("Frequency")
+    ax7.legend()
+
+    # Correlation plot between power_bias and ws_bias
+    ax8.scatter(power_bias, ws_bias, alpha=0.5, color="magenta")
+    ax8.set_title("Correlation Plot")
+    ax8.set_xlabel("Power Bias")
+    ax8.set_ylabel("Wind Speed Bias")
+
+    plt.tight_layout()
+    plt.savefig(fname=os.path.join(path, f"{step}_bias_histograms.pdf"))
+    plt.close()
+
+    # Calculate Pearson's correlation coefficient between power_bias and ws_bias
+    power_bias = (output_power - target_power).flatten().cpu().numpy()
+    ws_bias = (output_ws - target_ws).flatten().cpu().numpy()
+    correlation_coef = np.corrcoef(
+        power_bias[~np.isnan(power_bias)], ws_bias[~np.isnan(power_bias)]
+    )[0, 1]
+    print(
+        f"Pearson's correlation coefficient between power_bias and ws_bias: {correlation_coef}"
+    )
+
+    correlation_coef = np.corrcoef(
+        power_bias_nonzero[~np.isnan(power_bias_nonzero)],
+        normalized_ws_bias_scaled_nonzero[~np.isnan(power_bias_nonzero)],
+    )[0, 1]
+    print(
+        f"Pearson's correlation coefficient between power_bias and ws_bias: {correlation_coef}"
+    )
+
 
 def load_pangu_output(step: str) -> Tuple[torch.Tensor, torch.Tensor]:
     """Load pangu outputs for a given step (pre-generated pangu outputs).
