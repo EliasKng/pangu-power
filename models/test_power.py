@@ -83,6 +83,7 @@ def test(
     device: torch.device,
     res_path: str,
     logger: logging.Logger,
+    use_target_weather: bool = True,
 ):
     rmse_power = dict()
     mae_power = dict()
@@ -103,17 +104,28 @@ def test(
             periods_test,
         ) = data
 
-        input_upper_test, input_surface_test, target_power_test = (
+        (
+            input_upper_test,
+            input_surface_test,
+            target_power_test,
+            target_upper_test,
+            target_surface_test,
+        ) = (
             input_upper_test.to(device),
             input_surface_test.to(device),
             target_power_test.to(device),
+            target_upper_test.to(device),
+            target_surface_test.to(device),
         )
         model.eval()
 
-        # Inference
-        output_power_test = model_inference_power(
-            model, input_upper_test, input_surface_test, aux_constants
-        )
+        if not use_target_weather:
+            # Inference
+            output_power_test = model_inference_power(
+                model, input_upper_test, input_surface_test, aux_constants
+            )
+        else:
+            output_power_test = model(target_upper_test, target_surface_test)
 
         # Apply lsm
         lsm_expanded = load_land_sea_mask(output_power_test.device, fill_value=0)

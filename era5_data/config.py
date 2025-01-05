@@ -134,7 +134,8 @@ __C.POWER.CHECKPOINT = ""
 # - PanguPowerPatchRecoveryUpsample: Same as PanguPowerPatchRecovery but upsample layer weights are unfrozen
 # - PanguPowerConv: Adds convolutional layers to the output of pangu to use pangus output to predict power
 # - PanguPowerConvSigmoid: Same as PanguPowerConv but with a sigmoid activation function at the end
-__C.POWER.MODEL_TYPE = "PanguPowerPatchRecovery"
+# - PanguPowerConvDirect: Receives target weather as input, therfore no forecast is required. Is used to assess the isolated bias of the power model
+__C.POWER.MODEL_TYPE = "PanguPowerConvDirect"
 
 
 # ***** LORA *****

@@ -22,6 +22,7 @@ from wind_fusion.pangu_pytorch.models.test_power import test, test_baseline
 from models.pangu_power import (
     PanguPowerPatchRecovery,
     PanguPowerConv,
+    PanguPowerConvDirect,
 )
 from models.pangu_model import PanguModel
 import argparse
@@ -89,6 +90,11 @@ def load_model(device: torch.device) -> torch.nn.Module:
 
     elif model_type == "PanguPowerConvSigmoid":
         model = PanguPowerConv(device=device).to(device)
+        # Only finetune the last layer
+        req_grad_layers = ["_conv_power_layers"]
+
+    elif model_type == "PanguPowerConvDirect":
+        model = PanguPowerConvDirect(device=device).to(device)
         # Only finetune the last layer
         req_grad_layers = ["_conv_power_layers"]
 
@@ -403,7 +409,7 @@ def test_baselines(args, baseline_type):
 
 if __name__ == "__main__":
     models_to_train_or_test = [
-        "DA_1_Lo_Test9",
+        "Test",
     ]
 
     for type_net in models_to_train_or_test:

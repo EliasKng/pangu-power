@@ -213,6 +213,7 @@ def train(
     start_epoch: int,
     rank: int = 0,
     device: Union[torch.device, None] = None,
+    use_target_weather: bool = True,
 ) -> nn.Module:
     """Training code"""
     criterion = nn.L1Loss(reduction="none")
@@ -242,6 +243,7 @@ def train(
             rank,
             device,
             i,
+            use_target_weather,
         )
         loss_list.append(epoch_loss)
         lr_scheduler.step()
@@ -275,6 +277,7 @@ def train(
                 rank,
                 device,
                 i,
+                use_target_weather,
             )
 
             # Set best loss
@@ -307,6 +310,7 @@ def train_one_epoch(
     rank: int,
     device: Union[torch.device, None],
     epoch: int,
+    use_target_weather: bool,
 ) -> float:
     epoch_loss = 0.0
     print(f"Starting epoch {epoch}/{cfg.PG.TRAIN.EPOCHS}")
@@ -330,7 +334,12 @@ def train_one_epoch(
 
         optimizer.zero_grad()
         model.train()
-        output_power = model_inference_power(model, input, input_surface, aux_constants)
+        if not use_target_weather:
+            output_power = model_inference_power(
+                model, input, input_surface, aux_constants
+            )
+        else:
+            output_power = model(target_upper, target_surface)
         lsm_expanded = load_land_sea_mask(output_power.device)
         loss = calculate_loss(output_power, target_power, criterion, lsm_expanded)
         loss.backward()
@@ -412,6 +421,7 @@ def validate(
     rank: int,
     device: Union[torch.device, None],
     epoch: int,
+    use_target_weather: bool,
 ) -> Tuple[float, nn.Module, int]:
     print(f"Starting validation at epoch {epoch}")
     with torch.no_grad():
@@ -433,9 +443,14 @@ def validate(
                 target_power_val.to(device),
             )
             print(f"(V) Processing batch {id + 1}/{len(val_loader)}")
-            output_power_val = model_inference_power(
-                model, input_upper_val, input_surface_val, aux_constants
-            )
+
+            if not use_target_weather:
+                output_power_val = model_inference_power(
+                    model, input_upper_val, input_surface_val, aux_constants
+                )
+            else:
+                output_power_val = model(target_upper_val, target_surface_val)
+
             lsm_expanded = load_land_sea_mask(output_power_val.device)
             loss = calculate_loss(
                 output_power_val, target_power_val, criterion, lsm_expanded

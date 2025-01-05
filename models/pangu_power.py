@@ -176,6 +176,42 @@ class PanguPowerConv(PanguModel):
         self.load_state_dict(checkpoint["model"], strict=False)
 
 
+class PanguPowerConvDirect(PanguModel):
+    """Similar to PanguPowerConv, but this model instead expects the target weather as input, therefore no weather forecast is required. This model is used to assess the isolated bias of the power model."""
+
+    def __init__(
+        self,
+        depths: List[int] = [2, 6, 6, 2],
+        num_heads: List[int] = [6, 12, 12, 6],
+        dims: List[int] = [192, 384, 384, 192],
+        patch_size: Tuple[int, int, int] = (2, 4, 4),
+        device: Optional[Union[torch.device, int]] = None,
+    ) -> None:
+        super(PanguPowerConvDirect, self).__init__(
+            depths=depths,
+            num_heads=num_heads,
+            dims=dims,
+            patch_size=patch_size,
+            device=device,
+        )
+
+        self._conv_power_layers = PowerConv()
+
+        # Re-Init weights
+        super(PanguPowerConvDirect, self).apply(self._init_weights)
+
+    def forward(self, target_upper, target_surface):
+        output_power = self._conv_power_layers(target_upper, target_surface)
+        # Return output_surface for visualization purposes only
+        return output_power
+
+    def load_pangu_state_dict(self, device: torch.device) -> None:
+        checkpoint = torch.load(
+            cfg.PG.BENCHMARK.PRETRAIN_24_torch, map_location=device, weights_only=False
+        )
+        self.load_state_dict(checkpoint["model"], strict=False)
+
+
 def main():
     pppr = PanguPowerPatchRecovery()
     pppr.load_pangu_state_dict(torch.device("cpu"))
