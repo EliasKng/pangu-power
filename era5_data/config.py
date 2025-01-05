@@ -140,7 +140,7 @@ __C.POWER.MODEL_TYPE = "PanguPowerConvDirect"
 
 # ***** LORA *****
 # Contains hyperparameters for LORA. Works best with MODEL_TYPE="PanguPowerPatchRecovery".
-__C.POWER.LORA = True  # Whether to use LORA. If POWER.USE_CHECKPOINT == True, the checkpoint must have been trained with LORA, too.
+__C.POWER.LORA = False  # Whether to use LORA. If POWER.USE_CHECKPOINT == True, the checkpoint must have been trained with LORA, too.
 
 __C.LORA = ConfigNamespace()
 __C.LORA.R = 16
