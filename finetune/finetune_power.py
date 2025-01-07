@@ -1,12 +1,13 @@
 import sys
 import os
+from argparse import Namespace
+from typing import List
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 sys.path.append("/hkfs/home/project/hk-project-test-mlperf/om1434/masterarbeit")
 from wind_fusion import energy_dataset
 from era5_data import utils
 from era5_data.config import cfg
-from typing import List
 import torch
 from torch.optim.adam import Adam
 from torch.utils.data.distributed import DistributedSampler
@@ -34,17 +35,20 @@ Finetune pangu_power on the energy dataset
 """
 
 
-def _setup_lora(model, modules_to_save) -> torch.nn.Module:
+def _setup_lora(model: torch.nn.Module, modules_to_save: List[str]) -> torch.nn.Module:
     """Sets up LoRA for the model
 
     Parameters
     ----------
-    model : The model to set up LoRA for.
-    modules_to_save : The model with LoRA setup.
+    model : torch.nn.Module
+        The model to set up LoRA for.
+    modules_to_save : List[str]
+        The model with LoRA setup.
 
     Returns
     -------
-    torch.nn.Module: Returns a Peft model, as specified in the config file.
+    torch.nn.Module
+        Returns a Peft model, as specified in the config file.
     """
 
     # Get all linear layers in the model. They will be tuned by LoRA.
@@ -61,12 +65,23 @@ def _setup_lora(model, modules_to_save) -> torch.nn.Module:
         modules_to_save=modules_to_save,
     )
 
-    peft_model = get_peft_model(model, config)
+    peft_model = get_peft_model(model, config)  # type: ignore
     return peft_model
 
 
 def load_model(device: torch.device) -> torch.nn.Module:
-    """Loads the model specified in the config file. Will also wrap model w/ LoRA if set in config."""
+    """Loads the model specified in the config file. Will also wrap model w/ LoRA if set in config.
+
+    Parameters
+    ----------
+    device : torch.device
+        torch device to load the model on
+
+    Returns
+    -------
+    torch.nn.Module
+        The loaded model
+    """
 
     model_type = cfg.POWER.MODEL_TYPE
     req_grad_layers = []
@@ -129,9 +144,14 @@ def ddp_setup(
 
     Parameters
     ----------
-        rank: Unique identifier of each process
-        world_size: Total number of processes
-        gpu_list: List of GPUs to use
+        rank: int
+            Unique identifier of each process
+        world_size: int
+            Total number of processes
+        master_port: str
+            Port number for the master node in the distributed setup
+        gpu_list: List[int]
+            List of GPUs to use
     """
     os.environ["MASTER_ADDR"] = os.environ["HOSTNAME"]
     os.environ["MASTER_PORT"] = master_port
@@ -149,6 +169,26 @@ def create_dataloader(
 ) -> data.DataLoader:
     """
     Creates a DataLoader for the energy dataset. If distributed is set to True, the DataLoader will be created with a DistributedSampler.
+
+    Parameters
+    ----------
+    start : str
+        Start date for the dataset
+    end : str
+        End date for the dataset
+    freq : str
+        Frequency of the data
+    batch_size : int
+        Batch size for the DataLoader
+    shuffle : bool
+        Whether to shuffle the data
+    distributed : bool, optional
+        Whether to use a DistributedSampler, by default False
+
+    Returns
+    -------
+    data.DataLoader
+        The DataLoader for the energy dataset
     """
     dataset = energy_dataset.EnergyDataset(
         filepath_era5=cfg.ERA5_PATH,
@@ -181,6 +221,7 @@ def set_requires_grad(model: torch.nn.Module, layer_name: str) -> None:
     Sets the `requires_grad` attribute of the parameters in the model.
     This function will first set `requires_grad` to False for all parameters in the model.
     Then, it will set `requires_grad` to True for all parameters whose names contain the specified `layer_name`.
+
     Parameters
     ----------
     model : torch.nn.Module
@@ -198,6 +239,19 @@ def set_requires_grad(model: torch.nn.Module, layer_name: str) -> None:
 
 
 def setup_writer(output_path: str) -> SummaryWriter:
+    """
+    Set up a SummaryWriter for logging.
+
+    Parameters
+    ----------
+    output_path : str
+        The path to the directory where the writer will save logs.
+
+    Returns
+    -------
+    SummaryWriter
+        An instance of SummaryWriter for logging.
+    """
     writer_path = os.path.join(output_path, "writer")
     if not os.path.exists(writer_path):
         os.mkdir(writer_path)
@@ -206,6 +260,23 @@ def setup_writer(output_path: str) -> SummaryWriter:
 
 
 def setup_logger(type_net: str, horizon: int, output_path: str) -> logging.Logger:
+    """
+    Sets up the logger
+
+    Parameters
+    ----------
+    type_net : str
+        Used as the name of the logger.
+    horizon : int
+        The horizon value to be included in the logger name. Typically 24.
+    output_path : str
+        The path where the log file will be saved.
+
+    Returns
+    -------
+    logging.Logger
+        The configured logger instance.
+    """
     logger_name = type_net + str(horizon)
     utils.logger_info(logger_name, os.path.join(output_path, logger_name + ".log"))
     logger = logging.getLogger(logger_name)
@@ -218,6 +289,18 @@ def _get_device(rank: int, gpu_list: List[int]) -> torch.device:
     This function checks if CUDA is available and returns the corresponding
     GPU device based on the provided rank and GPU list. If CUDA is not available,
     it defaults to returning the CPU device.
+
+    Parameters
+    ----------
+    rank : int
+        The rank of the current process in the distributed setup.
+    gpu_list : List[int]
+        List of GPUs to use.
+
+    Returns
+    -------
+    torch.device
+        The appropriate device (GPU or CPU) for the given rank.
     """
 
     if torch.cuda.is_available():
@@ -228,6 +311,13 @@ def _get_device(rank: int, gpu_list: List[int]) -> torch.device:
 def _assert_gpu_list(gpu_list: List[int], dist: bool) -> None:
     """
     Asserts that the provided GPU list is valid based on the distributed training setting.
+
+    Parameters
+    ----------
+    gpu_list : List[int]
+        List of GPUs to use.
+    dist : bool
+        Whether distributed training is enabled.
     """
     assert len(gpu_list) > 0, "Please specify at least one GPU"
     if dist:
@@ -243,6 +333,18 @@ def _assert_gpu_list(gpu_list: List[int], dist: bool) -> None:
 def main(
     rank: int, args: argparse.Namespace, world_size: int, master_port: str
 ) -> None:
+    """
+    Main function to set up and run the fine-tuning process for the energy dataset.
+
+    Args:
+        rank (int): The rank of the current process in the distributed setup.
+        args (argparse.Namespace): Command-line arguments containing configuration parameters.
+        world_size (int): Total number of processes participating in the distributed training.
+        master_port (str): Port number for the master node in the distributed setup.
+
+    Returns:
+        None
+    """
     ddp_setup(rank, world_size, master_port, args.gpu_list)
 
     print(f"Rank: {rank}, World Size: {world_size}")
@@ -325,7 +427,19 @@ def main(
     destroy_process_group()
 
 
-def test_best_model(args):
+def test_best_model(args: argparse.Namespace) -> None:
+    """
+    Tests the best model (model that has the lowest validation loss) on the test dataset.
+
+    Parameters
+    ----------
+    args : argparse.Namespace
+        The arguments containing the configuration for testing the model. Is called after training.
+
+    Returns
+    -------
+    None
+    """
     output_path = os.path.join(cfg.PG_OUT_PATH, args.type_net, str(cfg.PG.HORIZON))
     utils.mkdirs(output_path)
     logger = setup_logger(args.type_net.split("/")[-1], cfg.PG.HORIZON, output_path)
@@ -372,7 +486,17 @@ def set_model_device_recursively(module: nn.Module, device: torch.device) -> Non
         set_model_device_recursively(child, device)
 
 
-def test_baselines(args, baseline_type):
+def test_baselines(args: Namespace, baseline_type: str) -> None:
+    """
+    Test the performance of baseline models.
+
+    Args:
+        args (Namespace): Containes passed arguments when starting the script.
+        baseline_type (str): Specifies the type of baseline prediction, can be "formula", "persistence or "mean".
+
+    Returns:
+        None
+    """
     output_path = os.path.join(cfg.PG_OUT_PATH, args.type_net, str(cfg.PG.HORIZON))
     utils.mkdirs(output_path)
     logger = setup_logger(args.type_net, cfg.PG.HORIZON, output_path)
