@@ -134,12 +134,12 @@ __C.POWER.CHECKPOINT = ""
 # - PanguPowerPatchRecoveryUpsample: Same as PanguPowerPatchRecovery but upsample layer weights are unfrozen
 # - PanguPowerConv: Adds convolutional layers to the output of pangu to use pangus output to predict power
 # - PanguPowerConvSigmoid: Same as PanguPowerConv but with a sigmoid activation function at the end
-__C.POWER.MODEL_TYPE = "PanguPowerPatchRecoveryUpsample"
+__C.POWER.MODEL_TYPE = "PanguPowerPatchRecovery"
 
 
 # ***** LORA *****
 # Contains hyperparameters for LORA. Works best with MODEL_TYPE="PanguPowerPatchRecovery".
-__C.POWER.LORA = False  # Whether to use LORA. If POWER.USE_CHECKPOINT == True, the checkpoint must have been trained with LORA, too.
+__C.POWER.LORA = True  # Whether to use LORA. If POWER.USE_CHECKPOINT == True, the checkpoint must have been trained with LORA, too.
 
 __C.LORA = ConfigNamespace()
 __C.LORA.R = 16
@@ -151,13 +151,13 @@ __C.LORA.LORA_DROPOUT = 0.1
 # Contains hyperparameters for PanguPowerConv
 __C.POWERCONV = ConfigNamespace()
 __C.POWERCONV.IN_CHANNELS = 28
-__C.POWERCONV.OUT_CHANNELS = [64, 128, 64, 1]
+__C.POWERCONV.OUT_CHANNELS = [64, 1]
 __C.POWERCONV.KERNEL_SIZE = 3
 __C.POWERCONV.STRIDE = 1
 __C.POWERCONV.PADDING = 1
 # First convolutional layer may have different kernel size and padding
-__C.POWERCONV.KERNEL_SIZE_FIRST = 1
-__C.POWERCONV.PADDING_FIRST = 0
+__C.POWERCONV.KERNEL_SIZE_FIRST = 3
+__C.POWERCONV.PADDING_FIRST = 1
 
 
 # Contains the power curve of Vestas Offshore V164-8000, which is used to calculate power from wind speed in the CDS dataset:

@@ -291,6 +291,10 @@ def main(
         msg += utils.torch_summarize(model, show_weights=False)
         logger.info(msg)
 
+    # Print test name again after model summary (it is very long)
+    if rank == 0:
+        logger.info(f"Start finetuning {args.type_net} on energy dataset")
+
     torch.set_num_threads(cfg.GLOBAL.NUM_STREADS)
 
     lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(
@@ -399,7 +403,7 @@ def test_baselines(args, baseline_type):
 
 if __name__ == "__main__":
     models_to_train_or_test = [
-        "MA_2_PR_Test1",
+        "DA_1_Lo_Test9",
     ]
 
     for type_net in models_to_train_or_test:
