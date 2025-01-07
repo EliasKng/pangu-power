@@ -167,8 +167,7 @@ def create_dataloader(
     shuffle: bool,
     distributed: bool = False,
 ) -> data.DataLoader:
-    """
-    Creates a DataLoader for the energy dataset. If distributed is set to True, the DataLoader will be created with a DistributedSampler.
+    """Creates a DataLoader for the energy dataset. If distributed is set to True, the DataLoader will be created with a DistributedSampler.
 
     Parameters
     ----------
@@ -217,8 +216,7 @@ def create_dataloader(
 
 
 def set_requires_grad(model: torch.nn.Module, layer_name: str) -> None:
-    """
-    Sets the `requires_grad` attribute of the parameters in the model.
+    """Sets the `requires_grad` attribute of the parameters in the model.
     This function will first set `requires_grad` to False for all parameters in the model.
     Then, it will set `requires_grad` to True for all parameters whose names contain the specified `layer_name`.
 
@@ -239,8 +237,7 @@ def set_requires_grad(model: torch.nn.Module, layer_name: str) -> None:
 
 
 def setup_writer(output_path: str) -> SummaryWriter:
-    """
-    Set up a SummaryWriter for logging.
+    """Set up a SummaryWriter for logging.
 
     Parameters
     ----------
@@ -260,8 +257,7 @@ def setup_writer(output_path: str) -> SummaryWriter:
 
 
 def setup_logger(type_net: str, horizon: int, output_path: str) -> logging.Logger:
-    """
-    Sets up the logger
+    """Sets up the logger
 
     Parameters
     ----------
@@ -284,8 +280,7 @@ def setup_logger(type_net: str, horizon: int, output_path: str) -> logging.Logge
 
 
 def _get_device(rank: int, gpu_list: List[int]) -> torch.device:
-    """
-    Get the appropriate device (GPU or CPU) for the given rank.
+    """Get the appropriate device (GPU or CPU) for the given rank.
     This function checks if CUDA is available and returns the corresponding
     GPU device based on the provided rank and GPU list. If CUDA is not available,
     it defaults to returning the CPU device.
@@ -309,8 +304,7 @@ def _get_device(rank: int, gpu_list: List[int]) -> torch.device:
 
 
 def _assert_gpu_list(gpu_list: List[int], dist: bool) -> None:
-    """
-    Asserts that the provided GPU list is valid based on the distributed training setting.
+    """Asserts that the provided GPU list is valid based on the distributed training setting.
 
     Parameters
     ----------
@@ -333,17 +327,22 @@ def _assert_gpu_list(gpu_list: List[int], dist: bool) -> None:
 def main(
     rank: int, args: argparse.Namespace, world_size: int, master_port: str
 ) -> None:
-    """
-    Main function to set up and run the fine-tuning process for the energy dataset.
+    """Main function to set up and run the fine-tuning process for the energy dataset.
 
-    Args:
-        rank (int): The rank of the current process in the distributed setup.
-        args (argparse.Namespace): Command-line arguments containing configuration parameters.
-        world_size (int): Total number of processes participating in the distributed training.
-        master_port (str): Port number for the master node in the distributed setup.
+    Parameters
+    ----------
+    rank : int
+        The rank of the current process in the distributed setup.
+    args : argparse.Namespace
+        Command-line arguments containing configuration parameters.
+    world_size : int
+        Total number of processes participating in the distributed training.
+    master_port : str
+        Port number for the master node in the distributed setup.
 
-    Returns:
-        None
+    Returns
+    -------
+    None
     """
     ddp_setup(rank, world_size, master_port, args.gpu_list)
 
@@ -428,8 +427,7 @@ def main(
 
 
 def test_best_model(args: argparse.Namespace) -> None:
-    """
-    Tests the best model (model that has the lowest validation loss) on the test dataset.
+    """Tests the best model (model that has the lowest validation loss) on the test dataset.
 
     Parameters
     ----------
@@ -472,8 +470,7 @@ def test_best_model(args: argparse.Namespace) -> None:
 
 
 def set_model_device_recursively(module: nn.Module, device: torch.device) -> None:
-    """
-    Recursively sets the `device` attribute for the given module and all its children. This is required becuase some masks are generated dynamically during model inference using the self.device parameter of that layers, which is set initially during model instantiation. If e.g., training and testing happens on different, the masks will be generated on the wrong device (if not set correctly by this function) which will cause an error.
+    """Recursively sets the `device` attribute for the given module and all its children. This is required becuase some masks are generated dynamically during model inference using the self.device parameter of that layers, which is set initially during model instantiation. If e.g., training and testing happens on different, the masks will be generated on the wrong device (if not set correctly by this function) which will cause an error.
 
     Args:
         module (nn.Module): The root module whose `device` attribute and its children's will be updated.
@@ -487,15 +484,18 @@ def set_model_device_recursively(module: nn.Module, device: torch.device) -> Non
 
 
 def test_baselines(args: Namespace, baseline_type: str) -> None:
-    """
-    Test the performance of baseline models.
+    """Test the performance of baseline models.
 
-    Args:
-        args (Namespace): Containes passed arguments when starting the script.
-        baseline_type (str): Specifies the type of baseline prediction, can be "formula", "persistence or "mean".
+    Parameters
+    ----------
+    args : Namespace
+        Contains passed arguments when starting the script.
+    baseline_type : str
+        Specifies the type of baseline prediction, can be "formula", "persistence" or "mean".
 
-    Returns:
-        None
+    Returns
+    -------
+    None
     """
     output_path = os.path.join(cfg.PG_OUT_PATH, args.type_net, str(cfg.PG.HORIZON))
     utils.mkdirs(output_path)
