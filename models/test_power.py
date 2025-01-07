@@ -13,6 +13,7 @@ from wind_fusion.pangu_pytorch.models.baseline_formula import BaselineFormula
 import logging
 import torch
 from torch import nn
+from typing import Dict, Tuple
 
 
 warnings.filterwarnings(
@@ -27,10 +28,32 @@ warnings.filterwarnings(
 
 
 def calculate_scores(
-    output_power, target_power, lsm_expanded, mean_power_per_grid_point, target_time
-):
+    output_power: torch.Tensor,
+    target_power: torch.Tensor,
+    lsm_expanded: torch.Tensor,
+    mean_power_per_grid_point: torch.Tensor,
+    target_time: str,
+) -> Tuple[str, Dict[str, float]]:
     """
     Calculates RMSE, MAE, and ACC scores for power predictions.
+
+    Parameters
+    ----------
+    output_power : torch.Tensor
+        The predicted power output.
+    target_power : torch.Tensor
+        The actual power output.
+    lsm_expanded : torch.Tensor
+        The land-sea mask.
+    mean_power_per_grid_point : torch.Tensor
+        The mean power per grid point.
+    target_time : str
+        The target time for the prediction.
+
+    Returns
+    -------
+    Tuple[str, Dict[str, float]]
+        The target time and a dictionary containing the RMSE, MAE, and ACC scores.
     """
     scores = {}
 
@@ -83,7 +106,27 @@ def test(
     device: torch.device,
     res_path: str,
     logger: logging.Logger,
-):
+) -> None:
+    """
+    Test the model on the test dataset and calculate RMSE, MAE, and ACC scores.
+
+    Parameters
+    ----------
+    test_loader : torch.utils.data.DataLoader
+        DataLoader for the test dataset.
+    model : nn.Module
+        The neural network model to be tested.
+    device : torch.device
+        Device to run the testing on.
+    res_path : str
+        Path to save the results and visualizations.
+    logger : logging.Logger
+        Logger for logging test information.
+
+    Returns
+    -------
+    None
+    """
     rmse_power = dict()
     mae_power = dict()
     acc_power = dict()
@@ -167,7 +210,33 @@ def test(
     logger.info(f"ACC: {(sum(acc_power.values()) / len(acc_power)):.4f}")
 
 
-def test_baseline(test_loader, pangu_model, device, res_path, baseline_type: str):
+def test_baseline(
+    test_loader: torch.utils.data.DataLoader,
+    pangu_model: nn.Module,
+    device: torch.device,
+    res_path: str,
+    baseline_type: str,
+) -> None:
+    """
+    Test the baseline model on the test dataset and calculate RMSE, MAE, and ACC scores.
+
+    Parameters
+    ----------
+    test_loader : torch.utils.data.DataLoader
+        DataLoader for the test dataset.
+    pangu_model : nn.Module
+        The Pangu model used for generating baseline predictions.
+    device : torch.device
+        Device to run the testing on.
+    res_path : str
+        Path to save the results and visualizations.
+    baseline_type : str
+        The type of baseline to use ("persistence", "mean", or "formula").
+
+    Returns
+    -------
+    None
+    """
     rmse_power = dict()
     mae_power = dict()
     acc_power = dict()
@@ -197,7 +266,7 @@ def test_baseline(test_loader, pangu_model, device, res_path, baseline_type: str
         # Inference
         mean_power = utils_data.loadMeanPower(device)
 
-        # Pangu output is required for formula baseline, therefore we need to run the model
+        # Pangu forecasts output is required for formula baseline, therefore we need to run the model
         if baseline_type == "formula":
             pangu_model.eval()
             # Inference
