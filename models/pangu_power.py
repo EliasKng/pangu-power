@@ -45,7 +45,7 @@ class PanguPowerPatchRecovery(PanguModel):
         maps: torch.Tensor,
         const_h: torch.Tensor,
     ) -> torch.Tensor:
-        """Backbone architecture"""
+        """Same forward pass as PanguModel, replaces the output layer"""
         # Embed the input fields into patches
         # input:(B, N, Z, H, W) ([1, 5, 13, 721, 1440])input_surface(B,N,H,W)([1, 4, 721, 1440])
         # x = checkpoint.checkpoint(self._input_layer, input, input_surface)
@@ -84,7 +84,7 @@ class PanguPowerPatchRecovery(PanguModel):
         return output
 
     def load_pangu_state_dict(self, device: torch.device) -> None:
-        """Get the prepared state dict of the pretrained pangu weights"""
+        """Get the prepared state dict of the pretrained pangu weights. This is used to initialize the model"""
         checkpoint = torch.load(
             cfg.PG.BENCHMARK.PRETRAIN_24_torch, map_location=device, weights_only=False
         )
@@ -127,7 +127,7 @@ class PanguPowerConv(PanguModel):
         super(PanguPowerConv, self).apply(self._init_weights)
 
     def forward(self, input, input_surface, statistics, maps, const_h):
-        """Backbone architecture"""
+        """Same forward pass as PanguModel, but adds a new output layer"""
         # Embed the input fields into patches
         # input:(B, N, Z, H, W) ([1, 5, 13, 721, 1440])input_surface(B,N,H,W)([1, 4, 721, 1440])
         # x = checkpoint.checkpoint(self._input_layer, input, input_surface)
@@ -170,17 +170,8 @@ class PanguPowerConv(PanguModel):
         return output_power
 
     def load_pangu_state_dict(self, device: torch.device) -> None:
+        """Get the prepared state dict of the pretrained pangu weights. This is used to initialize the model"""
         checkpoint = torch.load(
             cfg.PG.BENCHMARK.PRETRAIN_24_torch, map_location=device, weights_only=False
         )
         self.load_state_dict(checkpoint["model"], strict=False)
-
-
-def main():
-    pppr = PanguPowerPatchRecovery()
-    pppr.load_pangu_state_dict(torch.device("cpu"))
-
-
-if __name__ == "__main__":
-    model = PanguPowerPatchRecovery()
-    model.load_pangu_state_dict(torch.device("cpu"))
