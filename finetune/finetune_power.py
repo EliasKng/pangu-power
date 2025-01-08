@@ -543,7 +543,7 @@ def test_baselines(args: Namespace, baseline_type: str) -> None:
 
 if __name__ == "__main__":
     models_to_train_or_test = [
-        "TTest",
+        "PowerConvDirectTrainTestOnPangu",
     ]
 
     for type_net in models_to_train_or_test:
