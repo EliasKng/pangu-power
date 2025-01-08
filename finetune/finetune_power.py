@@ -1,5 +1,6 @@
 import sys
 import os
+import copy
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 sys.path.append("/hkfs/home/project/hk-project-test-mlperf/om1434/masterarbeit")
@@ -326,6 +327,11 @@ def main(
     torch.save(save_file, os.path.join(model_save_path, "best_checkpoint.pth"))
     print(f"Model saved at epoch {start_epoch}: best_checkpoint.pth")
 
+    best_model = copy.deepcopy(model.module)
+    if rank == 0:
+        torch.save(best_model, os.path.join(model_save_path, "best_model.pth"))
+        logger.info(f"New best model saved at epoch {start_epoch} before training.")
+
     model = train(
         model,
         train_loader=train_dataloader,
@@ -421,7 +427,7 @@ def test_baselines(args, baseline_type):
 
 if __name__ == "__main__":
     models_to_train_or_test = [
-        "PowerConvDirectTrain",
+        "PowerConvDirectTestOnPanguOutput",
     ]
 
     for type_net in models_to_train_or_test:
