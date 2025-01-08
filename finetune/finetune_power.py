@@ -5,7 +5,7 @@ from typing import List
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 sys.path.append("/hkfs/home/project/hk-project-test-mlperf/om1434/masterarbeit")
-from wind_fusion import energy_dataset
+from era5_data import energy_dataset
 from era5_data import utils
 from era5_data.config import cfg
 import torch
@@ -527,7 +527,7 @@ def test_baselines(args: Namespace, baseline_type: str) -> None:
 
 if __name__ == "__main__":
     models_to_train_or_test = [
-        "DA_1_PC_Test9",
+        "Test",
     ]
 
     for type_net in models_to_train_or_test:
