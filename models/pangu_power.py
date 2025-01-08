@@ -1,6 +1,7 @@
 import sys
 import os
 from typing import List, Tuple, Optional, Union
+from era5_data import utils_data
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import torch
@@ -126,7 +127,7 @@ class PanguPowerConv(PanguModel):
         # Re-Init weights
         super(PanguPowerConv, self).apply(self._init_weights)
 
-    def forward(self, input, input_surface, statistics, maps, const_h):
+    def forward(self, input, input_surface, statistics, maps, const_h, aux_constants):
         """Backbone architecture"""
         # Embed the input fields into patches
         # input:(B, N, Z, H, W) ([1, 5, 13, 721, 1440])input_surface(B,N,H,W)([1, 4, 721, 1440])
@@ -164,6 +165,10 @@ class PanguPowerConv(PanguModel):
         # output, output_surface = checkpoint.checkpoint(self._output_layer, x, 8, 181, 360)
         output_upper, output_surface = self._output_layer(x, 8, 181, 360)
 
+        output_upper, output_surface = utils_data.normBackData(
+            output_upper, output_surface, aux_constants["weather_statistics_last"]
+        )
+
         output_power = self._conv_power_layers(output_upper, output_surface)
 
         # Return output_surface for visualization purposes only
@@ -173,6 +178,26 @@ class PanguPowerConv(PanguModel):
         checkpoint = torch.load(
             cfg.PG.BENCHMARK.PRETRAIN_24_torch, map_location=device, weights_only=False
         )
+
+        checkpoint_powerconvdirect = torch.load(
+            "/home/hk-project-test-mlperf/om1434/masterarbeit/wind_fusion/pangu_pytorch/result/PowerConvDirectTrain/24/models/best_checkpoint.pth",
+            map_location=device,
+            weights_only=False,
+        )
+
+        # print("Checkpoint keys: ", checkpoint['model'].keys())
+        # print("Checkpoint PowerConvDirect keys: ", checkpoint_powerconvdirect['model'].keys())
+
+        # Filter keys from checkpoint_powerconvdirect that contain "_conv_power_layers"
+        conv_power_layers_keys = {
+            k: v
+            for k, v in checkpoint_powerconvdirect["model"].items()
+            if "_conv_power_layers" in k
+        }
+
+        # Add the conv_power_layers_keys to the checkpoint model
+        checkpoint["model"].update(conv_power_layers_keys)
+
         self.load_state_dict(checkpoint["model"], strict=False)
 
 

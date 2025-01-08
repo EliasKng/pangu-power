@@ -61,6 +61,7 @@ def model_inference_power(
         aux_constants["weather_statistics"],
         aux_constants["constant_maps"],
         aux_constants["const_h"],
+        aux_constants,
     )
 
     return output_power
