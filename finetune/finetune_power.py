@@ -527,7 +527,7 @@ def test_baselines(args: Namespace, baseline_type: str) -> None:
 
 if __name__ == "__main__":
     models_to_train_or_test = [
-        "DA_1_Lo_Test9",
+        "DA_1_PC_Test9",
     ]
 
     for type_net in models_to_train_or_test:
