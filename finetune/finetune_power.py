@@ -14,6 +14,7 @@ from torch.utils.data.distributed import DistributedSampler
 from torch.distributed import init_process_group, destroy_process_group
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch import nn
+import torch.multiprocessing as mp
 import os
 from random import randrange
 from torch.utils import data
@@ -525,15 +526,7 @@ def test_baselines(args: Namespace, baseline_type: str) -> None:
 
 
 if __name__ == "__main__":
-    models_to_train_or_test = [
-        "PowerConv/PanguPowerConvWithClippedReLU_Test1",
-        "PowerConv/PanguPowerConv_64_128_64_1_k3_sigmoid",
-        # "PowerConv/PanguPowerConv_64_128_64_1_k3_2",
-        # "PowerConv/PanguPowerConv_64_128_64_1_k3",
-        # "PowerConv/PanguPowerConv_64_128_64_1",
-        # "PowerConv/PanguPowerConv_64_1_k3",
-        # "PowerConv/PanguPowerConv_1_1_1_1",
-    ]
+    models_to_train_or_test = ["PanguPowerConv_Test16"]
 
     for type_net in models_to_train_or_test:
         parser = argparse.ArgumentParser()
@@ -562,10 +555,10 @@ if __name__ == "__main__":
         print(f"Master port: {master_port}")
 
         # Spawn processes for distributed training
-        # if args.dist and torch.cuda.is_available():
-        #     mp.spawn(main, args=(args, world_size, master_port), nprocs=world_size)  # type: ignore
-        # else:
-        #     main(0, args, 1, master_port)
+        if args.dist and torch.cuda.is_available():
+            mp.spawn(main, args=(args, world_size, master_port), nprocs=world_size)  # type: ignore
+        else:
+            main(0, args, 1, master_port)
         test_best_model(args)
 
         # test_baselines(args, "formula")

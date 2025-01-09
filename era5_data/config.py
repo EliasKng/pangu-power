@@ -151,13 +151,13 @@ __C.LORA.LORA_DROPOUT = 0.1
 # Contains hyperparameters for PanguPowerConv
 __C.POWERCONV = ConfigNamespace()
 __C.POWERCONV.IN_CHANNELS = 28
-__C.POWERCONV.OUT_CHANNELS = [64, 1]
-__C.POWERCONV.KERNEL_SIZE = 3
+__C.POWERCONV.OUT_CHANNELS = [64, 64, 64, 1]
+__C.POWERCONV.KERNEL_SIZE = 1
 __C.POWERCONV.STRIDE = 1
-__C.POWERCONV.PADDING = 1
+__C.POWERCONV.PADDING = 0
 # First convolutional layer may have different kernel size and padding
-__C.POWERCONV.KERNEL_SIZE_FIRST = 3
-__C.POWERCONV.PADDING_FIRST = 1
+__C.POWERCONV.KERNEL_SIZE_FIRST = __C.POWERCONV.KERNEL_SIZE
+__C.POWERCONV.PADDING_FIRST = __C.POWERCONV.PADDING
 
 
 # Contains the power curve of Vestas Offshore V164-8000, which is used to calculate power from wind speed in the CDS dataset:
