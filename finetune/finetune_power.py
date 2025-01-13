@@ -526,7 +526,7 @@ def test_baselines(args: Namespace, baseline_type: str) -> None:
 
 
 if __name__ == "__main__":
-    models_to_train_or_test = ["PanguPowerConv_Test20"]
+    models_to_train_or_test = ["PanguPowerConv_Test21"]
 
     for type_net in models_to_train_or_test:
         parser = argparse.ArgumentParser()
