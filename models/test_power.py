@@ -300,6 +300,7 @@ def test_baseline(
         # This can be used to pre-generate pangu outputs, which are required for some visualizations
         # save_output_pth(output_weather_upper, output_weather_surface, target_time, res_path)
 
+        # If the above is uncommented, the visualization must be commented out
         utils.mkdirs(png_path)
         visualize(
             output_power_test,
