@@ -367,6 +367,17 @@ def visuailze_all(
         plt.savefig(fname=os.path.join(path, f"{step}_power_epoch{epoch}.pdf"))
     plt.close()
 
+    fig_target_power = plt.figure(dpi=300)
+    ax_target_power = fig_target_power.add_subplot(111)
+    plot_target_power = ax_target_power.imshow(target_power, cmap="viridis")
+    plt.plot(ax=plot_target_power)
+    # plt.colorbar(plot_target_power, ax=ax_target_power, fraction=0.05, pad=0.05)
+    # ax_target_power.title.set_text("gt[power]")
+    plt.tight_layout()
+    plt.axis("off")
+    plt.savefig(fname=os.path.join(path, "{}_target_power.png".format(step)), dpi=300)
+    plt.close(fig_target_power)
+
 
 def load_pangu_output(step: str) -> Tuple[torch.Tensor, torch.Tensor]:
     """Load pangu outputs for a given step (pre-generated pangu outputs).
