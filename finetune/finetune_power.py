@@ -129,6 +129,7 @@ def load_model(device: torch.device) -> torch.nn.Module:
     for layer in req_grad_layers:
         set_requires_grad(model, layer)
 
+        # ToDo(EliasKng): Probably wraps the model twice is checkpoint is used
         # Prepare LoRA if specified
         if cfg.POWER.LORA:
             model = _setup_lora(model, req_grad_layers)
@@ -526,7 +527,7 @@ def test_baselines(args: Namespace, baseline_type: str) -> None:
 
 if __name__ == "__main__":
     models_to_train_or_test = [
-        "PanguPowerConv_Test23",
+        "PowerConv/PanguPowerConv_Test23",
     ]
 
     for type_net in models_to_train_or_test:
