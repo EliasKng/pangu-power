@@ -313,12 +313,12 @@ def visuailze_all(
     ax_2 = fig.add_subplot(211)
     plot_2 = ax_2.imshow(target_ws, cmap="coolwarm")
     plt.colorbar(plot_2, ax=ax_2, fraction=0.05, pad=0.05)
-    ax_2.title.set_text("gt[wind speed] Δ24h")
+    ax_2.title.set_text("Wind speed in m/s")
 
     ax_6 = fig.add_subplot(212)
     plot_6 = ax_6.imshow(target_power, cmap="coolwarm")
     plt.colorbar(plot_6, ax=ax_6, fraction=0.05, pad=0.05)
-    ax_6.title.set_text("gt[power]")
+    ax_6.title.set_text("Power capacity factor")
 
     plt.tight_layout()
     if epoch is None:
