@@ -209,6 +209,15 @@ def visualize(
         input_power=input_power,
         epoch=epoch,
     )
+    savepath = "/lsdf/kit/imk-tro/projects/Gruppe_Quinting/om1434/pangu_biases"
+    torch.save(
+        output_upper.detach().cpu() - target_upper.detach().cpu(),
+        os.path.join(savepath, f"bias_upper_{step}.pth"),
+    )
+    torch.save(
+        output_surface.detach().cpu() - target_surface.detach().cpu(),
+        os.path.join(savepath, f"bias_surface_{step}.pth"),
+    )
 
 
 def save_output_pth(

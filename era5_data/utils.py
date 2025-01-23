@@ -102,6 +102,9 @@ def visuailze_surface(output, target, input, var, step, path):
     var = variables.index(var)
     fig = plt.figure(figsize=(16, 2))
 
+    output_masked = output[~torch.isnan(output)]
+    max_output = torch.max(torch.abs(output_masked)).item()
+
     max_bias = _calc_max_bias(output[var, :, :], target[var, :, :])
 
     ax_1 = fig.add_subplot(141)
@@ -116,7 +119,7 @@ def visuailze_surface(output, target, input, var, step, path):
 
     ax_3 = fig.add_subplot(143)
     plot1 = ax_3.imshow(
-        output[var, :, :], cmap="coolwarm"
+        output[var, :, :], cmap="coolwarm", vmin=-2, vmax=2
     )  # , levels = levels, extend = 'min')
     plt.colorbar(plot1, ax=ax_3, fraction=0.05, pad=0.05)
     ax_3.title.set_text("pred (Δ 24h)")
