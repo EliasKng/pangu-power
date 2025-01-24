@@ -14,6 +14,7 @@ from torch.utils.data.distributed import DistributedSampler
 from torch.distributed import init_process_group, destroy_process_group
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch import nn
+import torch.multiprocessing as mp
 import os
 from random import randrange
 from torch.utils import data
@@ -115,7 +116,8 @@ def load_model(device: torch.device) -> torch.nn.Module:
             cfg.POWER.CHECKPOINT, map_location=device, weights_only=False
         )
 
-        # Setups LoRA if specified, so that the key names will match. Make sure that checkpoint is also using LoRA in that case
+        # Setups LoRA if specified, so that the key names will match. Make sure that checkpoint is also using LoRA in that case.
+        # Probably that is not required (I saw double wrapped models when using a LoRA checkpoint)
         if cfg.POWER.LORA:
             model = _setup_lora(model, req_grad_layers)
 
@@ -126,13 +128,13 @@ def load_model(device: torch.device) -> torch.nn.Module:
         model.load_pangu_state_dict(device)
 
     # Set requires_grad to True for the specified layers
-    for layer in req_grad_layers:
-        set_requires_grad(model, layer)
+    for param in model.parameters():
+        param.requires_grad = True
 
-        # ToDo(EliasKng): Probably wraps the model twice is checkpoint is used
-        # Prepare LoRA if specified
-        if cfg.POWER.LORA:
-            model = _setup_lora(model, req_grad_layers)
+    # ToDo(EliasKng): Probably wraps the model twice is checkpoint is used
+    # Prepare LoRA if specified
+    if cfg.POWER.LORA:
+        model = _setup_lora(model, req_grad_layers)
 
     return model
 
@@ -527,7 +529,7 @@ def test_baselines(args: Namespace, baseline_type: str) -> None:
 
 if __name__ == "__main__":
     models_to_train_or_test = [
-        "PowerConv/PanguPowerConv_Test23",
+        "FFT_Test1",
     ]
 
     for type_net in models_to_train_or_test:
@@ -557,10 +559,10 @@ if __name__ == "__main__":
         print(f"Master port: {master_port}")
 
         # Spawn processes for distributed training
-        # if args.dist and torch.cuda.is_available():
-        #     mp.spawn(main, args=(args, world_size, master_port), nprocs=world_size)  # type: ignore
-        # else:
-        #     main(0, args, 1, master_port)
+        if args.dist and torch.cuda.is_available():
+            mp.spawn(main, args=(args, world_size, master_port), nprocs=world_size)  # type: ignore
+        else:
+            main(0, args, 1, master_port)
         test_best_model(args)
 
         # test_baselines(args, "formula")

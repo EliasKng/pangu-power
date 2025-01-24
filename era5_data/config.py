@@ -134,7 +134,7 @@ __C.POWER.CHECKPOINT = ""
 # - PanguPowerPatchRecoveryUpsample: Same as PanguPowerPatchRecovery but upsample layer weights are unfrozen
 # - PanguPowerConv: Adds convolutional layers to the output of pangu to use pangus output to predict power
 # - PanguPowerConvSigmoid: Same as PanguPowerConv but with a sigmoid activation function at the end
-__C.POWER.MODEL_TYPE = "PanguPowerConv"
+__C.POWER.MODEL_TYPE = "PanguPowerPatchRecovery"
 
 
 # ***** LORA *****
