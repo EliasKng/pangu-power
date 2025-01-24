@@ -378,6 +378,17 @@ def visuailze_all(
     plt.savefig(fname=os.path.join(path, "{}_target_power.png".format(step)), dpi=300)
     plt.close(fig_target_power)
 
+    mean_power = utils_data.loadMeanPower(device="cpu").squeeze()
+    mean_power = prepare_europe(mean_power)
+    fig_mean_power = plt.figure(dpi=300)
+    ax_target_power = fig_mean_power.add_subplot(111)
+    plot_mean_power = ax_target_power.imshow(mean_power, cmap="viridis")
+    plt.plot(ax=plot_mean_power)
+    plt.tight_layout()
+    plt.axis("off")
+    plt.savefig(fname=os.path.join(path, "{}_mean_power.png".format(step)), dpi=300)
+    plt.close(fig_mean_power)
+
 
 def load_pangu_output(step: str) -> Tuple[torch.Tensor, torch.Tensor]:
     """Load pangu outputs for a given step (pre-generated pangu outputs).
