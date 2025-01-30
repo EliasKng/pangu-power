@@ -23,7 +23,26 @@ warnings.filterwarnings(
 )
 
 
-def load_land_sea_mask(device, mask_type="sea", fill_value=0):
+def load_land_sea_mask(
+    device: torch.device, mask_type: str = "sea", fill_value: int = 0
+) -> torch.Tensor:
+    """
+    Load the land-sea mask. Used to mask out land points in the loss calculation.
+
+    Parameters
+    ----------
+    device : torch.device
+        The device to load the mask onto.
+    mask_type : str, optional
+        The type of mask to load, by default "sea", can also be "land".
+    fill_value : int, optional
+        The value to fill the rest of the mask with, by default 0.
+
+    Returns
+    -------
+    torch.Tensor
+        The loaded land-sea mask.
+    """
     return utils_data.loadLandSeaMask(
         device, mask_type=mask_type, fill_value=fill_value
     )
@@ -125,7 +144,31 @@ def baseline_inference(
     raise NotImplementedError(f"Baseline type {type} not implemented.")
 
 
-def calculate_loss(output, target, criterion, lsm_expanded):
+def calculate_loss(
+    output: torch.Tensor,
+    target: torch.Tensor,
+    criterion: nn.Module,
+    lsm_expanded: torch.Tensor,
+) -> torch.Tensor:
+    """
+    Calculate the loss for the model output. Applies the land-sea mask to the output and target before calculating the loss.
+
+    Parameters
+    ----------
+    output : torch.Tensor
+        The model output.
+    target : torch.Tensor
+        The target values.
+    criterion : nn.Module
+        The loss criterion.
+    lsm_expanded : torch.Tensor
+        The land-sea mask.
+
+    Returns
+    -------
+    torch.Tensor
+        The calculated loss.
+    """
     mask_not_zero = ~(lsm_expanded == 0)
     mask_not_zero = mask_not_zero.unsqueeze(1)
     output = output * lsm_expanded
@@ -145,7 +188,7 @@ def visualize(
     input_power: Optional[torch.Tensor] = None,
     epoch: Optional[int] = None,
 ) -> None:
-    """For docsctring, find utils.visuailze_all function"""
+    """For documentation, see utils.visuailze_all function"""
     if input_power is not None:
         input_power = input_power.detach().cpu().squeeze()
 
@@ -176,6 +219,7 @@ def save_output_pth(
 ) -> None:
     """
     Save the pangu output tensors to .pth files, those are used visualization purposes.
+    Only required, when the pangu outputs are not pre-generated (e.g., when test date range changes).
     Parameters
     ----------
     output_upper : torch.Tensor
@@ -214,7 +258,43 @@ def train(
     rank: int = 0,
     device: Union[torch.device, None] = None,
 ) -> nn.Module:
-    """Training code"""
+    """
+    Train the model using the provided training and validation data loaders, optimizer, and learning rate scheduler.
+
+    This function performs training over a specified number of epochs, validates the model at specified intervals,
+    saves model checkpoints, and implements early stopping if there is no improvement in validation loss for a
+    certain number of epochs. The training process is synchronized across multiple ranks for distributed training.
+
+    Parameters
+    ----------
+    model : nn.Module
+        The model to be trained.
+    train_loader : torch.utils.data.DataLoader
+        DataLoader for the training dataset.
+    val_loader : torch.utils.data.DataLoader
+        DataLoader for the validation dataset.
+    optimizer : torch.optim.Optimizer
+        Optimizer for updating model parameters.
+    lr_scheduler : torch.optim.lr_scheduler.MultiStepLR
+        Learning rate scheduler.
+    res_path : str
+        Path to save model checkpoints.
+    writer : SummaryWriter
+        TensorBoard SummaryWriter for logging.
+    logger : logging.Logger
+        Logger for logging training progress and information.
+    start_epoch : int
+        The epoch to start training from.
+    rank : int, optional
+        Rank of the current process in distributed training, by default 0.
+    device : Union[torch.device, None], optional
+        Device to run the training on, by default None.
+
+    Returns
+    -------
+    nn.Module
+        The best model based on validation loss.
+    """
     criterion = nn.L1Loss(reduction="none")
     epochs = cfg.PG.TRAIN.EPOCHS
     loss_list: List[float] = []
@@ -308,6 +388,35 @@ def train_one_epoch(
     device: Union[torch.device, None],
     epoch: int,
 ) -> float:
+    """
+    Trains the model for one epoch.
+
+    Parameters
+    ----------
+    model : nn.Module
+        The model to train.
+    train_loader : torch.utils.data.DataLoader
+        The data loader for the training data.
+    optimizer : torch.optim.Optimizer
+        The optimizer for training.
+    criterion : nn.Module
+        The loss criterion.
+    aux_constants : Dict[str, torch.Tensor]
+        Auxiliary constants for the model. Contains weather statistics and constant maps.
+    logger : logging.Logger
+        The logger for logging information.
+    rank : int
+        The rank of the current process.
+    device : Union[torch.device, None]
+        The device to train on.
+    epoch : int
+        The current epoch number.
+
+    Returns
+    -------
+    float
+        The average loss for the epoch.
+    """
     epoch_loss = 0.0
     print(f"Starting epoch {epoch}/{cfg.PG.TRAIN.EPOCHS}")
 
@@ -330,9 +439,15 @@ def train_one_epoch(
 
         optimizer.zero_grad()
         model.train()
+
+        # Model inference
         output_power = model_inference_power(model, input, input_surface, aux_constants)
+
+        # Load lsm and calculate loss
         lsm_expanded = load_land_sea_mask(output_power.device)
         loss = calculate_loss(output_power, target_power, criterion, lsm_expanded)
+
+        # Backpropagation
         loss.backward()
         optimizer.step()
         epoch_loss += loss.item()
@@ -413,6 +528,50 @@ def validate(
     device: Union[torch.device, None],
     epoch: int,
 ) -> Tuple[float, nn.Module, int]:
+    """
+    Validate the model on the validation dataset and update the best model if the validation loss improves.
+
+    Parameters
+    ----------
+    model : nn.Module
+        The neural network model to be validated.
+    optimizer : torch.optim.Optimizer
+        The optimizer used for training the model.
+    lr_scheduler : torch.optim.lr_scheduler.MultiStepLR
+        The learning rate scheduler used during training.
+    val_loader : torch.utils.data.DataLoader
+        DataLoader for the validation dataset.
+    criterion : nn.Module
+        The loss function used to calculate the validation loss.
+    aux_constants : Dict[str, torch.Tensor]
+        Auxiliary constants required for model inference.
+    writer : SummaryWriter
+        TensorBoard SummaryWriter for logging.
+    logger : logging.Logger
+        Logger for logging validation information.
+    res_path : str
+        Path to save the results and model checkpoints.
+    best_loss : float
+        The best validation loss achieved so far.
+    epoch_loss : float
+        The training loss for the current epoch.
+    best_model : nn.Module
+        The best model based on validation loss.
+    epochs_since_last_improvement : int
+        Number of epochs since the last improvement in validation loss. Needed for early stopping.
+    rank : int
+        Rank of the current process (used for distributed training).
+    device : Union[torch.device, None]
+        Device to run the validation on.
+    epoch : int
+        The current epoch number.
+
+    Returns
+    -------
+    Tuple[float, nn.Module, int]
+        A tuple containing the validation loss, the best model, and the number of epochs since the last improvement.
+    """
+
     print(f"Starting validation at epoch {epoch}")
     with torch.no_grad():
         model.eval()
