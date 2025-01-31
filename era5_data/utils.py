@@ -3,14 +3,16 @@ import numpy as np
 import sys
 import os
 from typing import Tuple, Optional
+import torch
+import matplotlib.pyplot as plt
+import cartopy.crs as ccrs
+import cartopy.feature as cfeature
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from era5_data.config import cfg
 from era5_data import utils_data as utils_data
-import torch
 
 from torch.nn.modules.module import _addindent
-import matplotlib.pyplot as plt
 import logging
 
 
@@ -223,6 +225,45 @@ def visuailze_power(output, target, input, step, path):
     plt.close()
 
 
+def _plot_map(ax, data, title, color_coords, cmap="coolwarm", vmin=None, vmax=None):
+    """Helper function to plot a single map with Cartopy."""
+    # visible_coords = [-22, 38.5, 31, 69]  # [lon_min, lon_max, lat_min, lat_max]
+    visible_coords = [-22, 45, 27, 72]
+
+    ax.set_extent(visible_coords, crs=ccrs.PlateCarree())  # Crop to Europe
+    ax.coastlines(resolution="50m", linewidth=0.3, color="#777777")
+    ax.add_feature(
+        cfeature.BORDERS, linewidth=0.3, edgecolor="#777777", facecolor="none"
+    )
+
+    # Add gridlines
+    gl = ax.gridlines(
+        draw_labels=True,
+        xlocs=np.arange(-180, 181, 10),
+        ylocs=np.arange(-90, 91, 10),
+        linewidth=0.3,
+        color="#777777",
+        alpha=0.5,
+    )
+    gl.top_labels = False
+    gl.right_labels = False
+
+    # Flip data horizontally to match Cartopy's coordinate system
+    data = torch.flip(data, dims=(0,))
+
+    plot = ax.imshow(
+        data,
+        extent=color_coords,
+        origin="lower",
+        transform=ccrs.PlateCarree(),
+        cmap=cmap,
+        vmin=vmin,
+        vmax=vmax,
+    )
+    plt.colorbar(plot, ax=ax, fraction=0.037, pad=0.05)
+    ax.set_title(title, fontsize=10)
+
+
 def visualize_all(
     output_power: torch.Tensor,
     target_power: torch.Tensor,
@@ -239,31 +280,14 @@ def visualize_all(
     z: int = 0,
     epoch: Optional[int] = None,
 ):
-    """Visualizes both wind_speeds (pangu) and power predictions.
+    """Visualizes wind speeds (Pangu) and power predictions using Cartopy maps."""
+    color_coords = [-22, 45.55, 26.4, 72.5]  # [lon_min, lon_max, lat_min, lat_max]
 
-    Parameters
-    ----------
-    output_power, target_power, input_surface, input_upper, output_pangu_surface, output_pangu_upper, target_pangu_surface, target_pangu_upper: torch.Tensor
-        Tensors containing power forecast, power target, weather input, output and target for both surface and upper levels.
-    step : str
-        Target step (date & time) for the visualization: e.g. "2017051000" (YYYYMMDDHH).
-    path : str
-        Output path (folder) for the visualization.
-    input_power : Optional[torch.Tensor], optional
-        A tensor containing the power input. Power input is only used in the formula baseline model so far.
-    use_surface : bool, optional
-        Wether to visualize surface wind or upper level wind, by default False
-    z : int, optional
-        If upper level wind -> pressure level to visualize wind for 0 corresponds to 1000hPa. By default 0
-    epoch : Optional[int], optional
-        Is used during validation to save one plot per epoch, by default None
-    """
-    # Either visualize windspeeds at surface or upper level
+    # Extract wind speed data
     if use_surface:
         variables_surface = cfg.ERA5_SURFACE_VARIABLES
         var_u_surface = variables_surface.index("u10")
         var_v_surface = variables_surface.index("v10")
-
         input_ws = _calc_wind_speed(
             input_pangu_surface[var_u_surface, :, :],
             input_pangu_surface[var_v_surface, :, :],
@@ -280,7 +304,6 @@ def visualize_all(
         variables_upper = cfg.ERA5_UPPER_VARIABLES
         var_u_upper = variables_upper.index("u")
         var_v_upper = variables_upper.index("v")
-
         input_ws = _calc_wind_speed(
             input_pangu_upper[var_u_upper, z, :, :],
             input_pangu_upper[var_v_upper, z, :, :],
@@ -294,77 +317,66 @@ def visualize_all(
             output_pangu_upper[var_v_upper, z, :, :],
         )
 
-    # Prepare data for visualization: cut out europe area and replace land area with NaN
+    # Prepare data for visualization
     input_ws = prepare_europe(input_ws)
     target_ws = prepare_europe(target_ws)
     output_ws = prepare_europe(output_ws)
-    if input_power is not None:
-        input_power = prepare_europe(input_power)
     target_power = prepare_europe(target_power)
     output_power = prepare_europe(output_power)
+    if input_power is not None:
+        input_power = prepare_europe(input_power)
 
-    # Calculate maximum bias for color scale (for 0 to be white)
     max_bias_ws = _calc_max_bias(output_ws, target_ws)
     max_bias_power = _calc_max_bias(output_power, target_power)
 
-    # Create figure
-    fig = plt.figure(figsize=(12, 4), dpi=600)
+    # Create figure with subplots
+    fig, axes = plt.subplots(
+        2,
+        4,
+        figsize=(12, 4),
+        dpi=300,
+        subplot_kw={
+            "projection": ccrs.Orthographic(
+                central_longitude=11.5, central_latitude=49.5
+            )
+        },
+    )
 
     # Wind Speed Subplots
-    ax_1 = fig.add_subplot(241)
-    plot_1 = ax_1.imshow(input_ws, cmap="coolwarm")
-    ax_1.title.set_text("input[wind speed]")
-    plt.colorbar(plot_1, ax=ax_1, fraction=0.15, pad=0.05)
-
-    ax_2 = fig.add_subplot(242)
-    plot_2 = ax_2.imshow(target_ws, cmap="coolwarm")
-    plt.colorbar(plot_2, ax=ax_2, fraction=0.05, pad=0.05)
-    ax_2.title.set_text("gt[wind speed] Δ24h")
-
-    ax_3 = fig.add_subplot(243)
-    plot_3 = ax_3.imshow(output_ws, cmap="coolwarm")
-    plt.colorbar(plot_3, ax=ax_3, fraction=0.05, pad=0.05)
-    ax_3.title.set_text("pred[wind speed] Δ24h")
-
-    ax_4 = fig.add_subplot(244)
-    plot_4 = ax_4.imshow(
-        output_ws - target_ws, cmap="coolwarm", vmin=-max_bias_ws, vmax=max_bias_ws
+    _plot_map(axes[0, 0], input_ws, "input[wind speed]", color_coords)
+    _plot_map(axes[0, 1], target_ws, "gt[wind speed] Δ24h", color_coords)
+    _plot_map(axes[0, 2], output_ws, "pred[wind speed] Δ24h", color_coords)
+    _plot_map(
+        axes[0, 3],
+        output_ws - target_ws,
+        "bias[wind speed]",
+        color_coords,
+        vmin=-max_bias_ws,
+        vmax=max_bias_ws,
     )
-    plt.colorbar(plot_4, ax=ax_4, fraction=0.05, pad=0.05)
-    ax_4.title.set_text("bias[wind speed]")
 
     # Power Subplots
+    # Only plot input power if it is provided
     if input_power is not None:
-        ax_5 = fig.add_subplot(245)
-        plot_5 = ax_5.imshow(input_power, cmap="coolwarm")
-        plt.colorbar(plot_5, ax=ax_5, fraction=0.05, pad=0.05)
-        ax_5.title.set_text("input[power]")
-
-    ax_6 = fig.add_subplot(246)
-    plot_6 = ax_6.imshow(target_power, cmap="coolwarm")
-    plt.colorbar(plot_6, ax=ax_6, fraction=0.05, pad=0.05)
-    ax_6.title.set_text("gt[power]")
-
-    ax_7 = fig.add_subplot(247)
-    plot_7 = ax_7.imshow(output_power, cmap="coolwarm")
-    plt.colorbar(plot_7, ax=ax_7, fraction=0.05, pad=0.05)
-    ax_7.title.set_text("pred[power] Δ24h")
-
-    ax_8 = fig.add_subplot(248)
-    plot_8 = ax_8.imshow(
+        _plot_map(axes[1, 0], input_power, "input[power]", color_coords)
+    else:
+        fig.delaxes(axes[1, 0])  # Remove the axis if input_power is not provided
+    _plot_map(axes[1, 1], target_power, "gt[power]", color_coords)
+    _plot_map(axes[1, 2], output_power, "pred[power] Δ24h", color_coords)
+    _plot_map(
+        axes[1, 3],
         output_power - target_power,
-        cmap="coolwarm",
+        "bias[power]",
+        color_coords,
         vmin=-max_bias_power,
         vmax=max_bias_power,
     )
-    plt.colorbar(plot_8, ax=ax_8, fraction=0.05, pad=0.05)
-    ax_8.title.set_text("bias[power]")
 
     plt.tight_layout()
     if epoch is None:
-        plt.savefig(fname=os.path.join(path, "{}_power.pdf".format(step)))
+        plt.savefig(os.path.join(path, f"{step}_3d_power.pdf"))
     else:
-        plt.savefig(fname=os.path.join(path, f"{step}_power_epoch{epoch}.pdf"))
+        plt.savefig(os.path.join(path, f"{step}_3d_power_epoch{epoch}.pdf"))
     plt.close()
 
 
@@ -506,10 +518,10 @@ def save_error_power(csv_path, power_scores, error):
     score_power.to_csv("{}/{}.csv".format(csv_path, f"{error}_power"))
 
 
-def prepare_europe(data: torch.Tensor) -> torch.Tensor:
+def prepare_europe(data: torch.Tensor, fill_value=float("nan")) -> torch.Tensor:
     """Cut out Europe area from the data and replace land area with NaN."""
     lsm = utils_data.loadLandSeaMask(
-        device=None, mask_type="sea", fill_value=float("nan")
+        device=None, mask_type="sea", fill_value=fill_value
     )
     # Cut out Europe area
     data = data * lsm
