@@ -496,7 +496,7 @@ def visuailze_all(
         normalized_ws_bias_scaled_nonzero[~np.isnan(power_bias_nonzero)],
     )[0, 1]
     print(
-        f"Pearson's correlation coefficient between power_bias and ws_bias: {correlation_coef}"
+        f"Pearson's correlation coefficient between power_bias (nonzero) and ws_bias (scaled + nonzero): {correlation_coef}"
     )
 
 
