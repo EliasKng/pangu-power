@@ -373,7 +373,7 @@ def visuailze_all(
     # Histogram for power bias
     power_bias = (output_power - target_power).flatten().cpu().numpy()
     ax1.hist(power_bias, bins=50, color="blue", alpha=0.7)
-    ax1.set_title("Power Bias Histogram")
+    ax1.set_title("Power bias histogram")
     ax1.set_xlabel("Bias")
     ax1.set_ylabel("Frequency")
 
@@ -381,14 +381,14 @@ def visuailze_all(
     epsilon = 0.005
     power_bias_nonzero = power_bias[np.abs(power_bias) > epsilon]
     ax2.hist(power_bias_nonzero, bins=50, color="green", alpha=0.7)
-    ax2.set_title("Power Bias Histogram (Non-zero)")
+    ax2.set_title("Power bias histogram (non-zero)")
     ax2.set_xlabel("Bias")
     ax2.set_ylabel("Frequency")
 
     # Histogram for wind speed bias
     ws_bias = (output_ws - target_ws).flatten().cpu().numpy()
     ax3.hist(ws_bias, bins=50, color="red", alpha=0.7)
-    ax3.set_title("Wind Speed Bias Histogram")
+    ax3.set_title("Wind speed bias histogram")
     ax3.set_xlabel("Bias")
     ax3.set_ylabel("Frequency")
 
@@ -396,8 +396,8 @@ def visuailze_all(
     max_ws_bias = np.nanmax(np.abs(ws_bias))
     normalized_ws_bias = ws_bias / max_ws_bias
     ax4.hist(normalized_ws_bias, bins=50, color="purple", alpha=0.7)
-    ax4.set_title("Normalized Wind Speed Bias Histogram")
-    ax4.set_xlabel("Normalized Bias")
+    ax4.set_title("Normalized wind speed bias histogram")
+    ax4.set_xlabel("Normalized bias")
     ax4.set_ylabel("Frequency")
 
     # Combined histogram for power bias (non-zero) and normalized wind speed bias
@@ -406,16 +406,16 @@ def visuailze_all(
         bins=50,
         color="green",
         alpha=0.7,
-        label="Power Bias (Non-zero)",
+        label="Power bias (non-zero)",
     )
     ax5.hist(
         normalized_ws_bias,
         bins=50,
         color="purple",
         alpha=0.7,
-        label="Normalized Wind Speed Bias",
+        label="Normalized wind speed bias",
     )
-    ax5.set_title("Combined Histogram")
+    ax5.set_title("Combined histogram")
     ax5.set_xlabel("Bias")
     ax5.set_ylabel("Frequency")
     ax5.legend()
@@ -434,17 +434,17 @@ def visuailze_all(
         bins=50,
         color="orange",
         alpha=0.7,
-        label="Normalized WS Bias (Scaled)",
+        label="Normalized WS bias (scaled)",
     )
     ax6.hist(
         power_bias_nonzero,
         bins=50,
         color="green",
         alpha=0.7,
-        label="Power Bias (Non-zero)",
+        label="Power bias (non-zero)",
     )
-    ax6.set_title("Normalized WS Bias (Scaled) Histogram")
-    ax6.set_xlabel("Scaled Bias")
+    ax6.set_title("Normalized WS bias (scaled) histogram")
+    ax6.set_xlabel("Scaled bias")
     ax6.set_ylabel("Frequency")
     ax6.legend()
 
@@ -457,25 +457,25 @@ def visuailze_all(
         bins=50,
         color="cyan",
         alpha=0.7,
-        label="Normalized WS Bias (Scaled, Non-zero)",
+        label="Normalized WS bias (scaled, non-zero)",
     )
     ax7.hist(
         power_bias_nonzero,
         bins=50,
         color="green",
         alpha=0.7,
-        label="Power Bias (Non-zero)",
+        label="Power bias (non-zero)",
     )
-    ax7.set_title("Normalized WS Bias (Scaled, Non-zero) Histogram")
-    ax7.set_xlabel("Scaled Bias")
+    ax7.set_title("Normalized WS bias (scaled, non-zero) histogram")
+    ax7.set_xlabel("Scaled bias")
     ax7.set_ylabel("Frequency")
     ax7.legend()
 
     # Correlation plot between power_bias and ws_bias
     ax8.scatter(power_bias, ws_bias, alpha=0.5, color="magenta")
-    ax8.set_title("Correlation Plot")
-    ax8.set_xlabel("Power Bias")
-    ax8.set_ylabel("Wind Speed Bias")
+    ax8.set_title("Correlation plot")
+    ax8.set_xlabel("Power bias")
+    ax8.set_ylabel("Wind speed bias")
 
     plt.tight_layout()
     plt.savefig(fname=os.path.join(path, f"{step}_bias_histograms.pdf"))
@@ -485,34 +485,21 @@ def visuailze_all(
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6), dpi=300)
 
     # Wind speed bias
-    ax1.imshow(
+    im1 = ax1.imshow(
         output_ws - target_ws, cmap="coolwarm", vmin=-max_bias_ws, vmax=max_bias_ws
     )
-    ax1.set_title("Wind Speed Bias")
-    plt.colorbar(
-        ax1.imshow(
-            output_ws - target_ws, cmap="coolwarm", vmin=-max_bias_ws, vmax=max_bias_ws
-        ),
-        ax=ax1,
-    )
+    ax1.set_title("Wind speed bias")
+    plt.colorbar(im1, ax=ax1, fraction=0.03, pad=0.04)
 
     # Model bias
-    ax2.imshow(
+    im2 = ax2.imshow(
         output_power - target_power,
         cmap="coolwarm",
         vmin=-max_bias_power,
         vmax=max_bias_power,
     )
-    ax2.set_title("Model Bias")
-    plt.colorbar(
-        ax2.imshow(
-            output_power - target_power,
-            cmap="coolwarm",
-            vmin=-max_bias_power,
-            vmax=max_bias_power,
-        ),
-        ax=ax2,
-    )
+    ax2.set_title("Power model bias")
+    plt.colorbar(im2, ax=ax2, fraction=0.03, pad=0.04)
 
     plt.tight_layout()
     plt.savefig(fname=os.path.join(path, f"{step}_large_bias_visualizations.pdf"))
