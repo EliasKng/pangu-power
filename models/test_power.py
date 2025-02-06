@@ -215,6 +215,7 @@ def test_baseline(
     pangu_model: nn.Module,
     device: torch.device,
     res_path: str,
+    logger: logging.Logger,
     baseline_type: str,
 ) -> None:
     """
@@ -339,3 +340,9 @@ def test_baseline(
     utils.save_error_power(csv_path, rmse_power, "rmse")
     utils.save_error_power(csv_path, mae_power, "mae")
     utils.save_error_power(csv_path, acc_power, "acc")
+
+    # Print mean scores
+    logger.info(f"{res_path.split('/')[-2]} model scores:")
+    logger.info(f"RMSE: {(sum(rmse_power.values()) / len(rmse_power)):.4f}")
+    logger.info(f"MAE: {(sum(mae_power.values()) / len(mae_power)):.4f}")
+    logger.info(f"ACC: {(sum(acc_power.values()) / len(acc_power)):.4f}")
