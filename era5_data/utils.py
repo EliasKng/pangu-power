@@ -481,6 +481,43 @@ def visuailze_all(
     plt.savefig(fname=os.path.join(path, f"{step}_bias_histograms.pdf"))
     plt.close()
 
+    # New subplot for large visualizations of wind speed bias and model bias
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6), dpi=300)
+
+    # Wind speed bias
+    ax1.imshow(
+        output_ws - target_ws, cmap="coolwarm", vmin=-max_bias_ws, vmax=max_bias_ws
+    )
+    ax1.set_title("Wind Speed Bias")
+    plt.colorbar(
+        ax1.imshow(
+            output_ws - target_ws, cmap="coolwarm", vmin=-max_bias_ws, vmax=max_bias_ws
+        ),
+        ax=ax1,
+    )
+
+    # Model bias
+    ax2.imshow(
+        output_power - target_power,
+        cmap="coolwarm",
+        vmin=-max_bias_power,
+        vmax=max_bias_power,
+    )
+    ax2.set_title("Model Bias")
+    plt.colorbar(
+        ax2.imshow(
+            output_power - target_power,
+            cmap="coolwarm",
+            vmin=-max_bias_power,
+            vmax=max_bias_power,
+        ),
+        ax=ax2,
+    )
+
+    plt.tight_layout()
+    plt.savefig(fname=os.path.join(path, f"{step}_large_bias_visualizations.pdf"))
+    plt.close()
+
     # Calculate Pearson's correlation coefficient between power_bias and ws_bias
     power_bias = (output_power - target_power).flatten().cpu().numpy()
     ws_bias = (output_ws - target_ws).flatten().cpu().numpy()
@@ -491,13 +528,27 @@ def visuailze_all(
         f"Pearson's correlation coefficient between power_bias and ws_bias: {correlation_coef}"
     )
 
-    correlation_coef = np.corrcoef(
+    correlation_coef_nonzero = np.corrcoef(
         power_bias_nonzero[~np.isnan(power_bias_nonzero)],
         normalized_ws_bias_scaled_nonzero[~np.isnan(power_bias_nonzero)],
     )[0, 1]
     print(
-        f"Pearson's correlation coefficient between power_bias (nonzero) and ws_bias (scaled + nonzero): {correlation_coef}"
+        f"Pearson's correlation coefficient between power_bias (nonzero) and ws_bias (scaled + nonzero): {correlation_coef_nonzero}"
     )
+
+    # Save correlation coefficients to a single CSV
+    correlation_data = {
+        "step": [step],
+        "correlation_coef": [correlation_coef],
+        "correlation_coef_nonzero": [correlation_coef_nonzero],
+    }
+    correlation_df = pd.DataFrame(correlation_data)
+
+    csv_path = os.path.join(path, "correlations.csv")
+    if os.path.exists(csv_path):
+        correlation_df.to_csv(csv_path, mode="a", header=False, index=False)
+    else:
+        correlation_df.to_csv(csv_path, mode="w", header=True, index=False)
 
 
 def load_pangu_output(step: str) -> Tuple[torch.Tensor, torch.Tensor]:

@@ -14,7 +14,6 @@ from torch.utils.data.distributed import DistributedSampler
 from torch.distributed import init_process_group, destroy_process_group
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch import nn
-import torch.multiprocessing as mp
 import os
 from random import randrange
 from torch.utils import data
@@ -528,7 +527,7 @@ def test_baselines(args: Namespace, baseline_type: str) -> None:
 
 if __name__ == "__main__":
     models_to_train_or_test = [
-        "ModelAblations/MA_3_LoRA_Test8",
+        "ModelAblations/MA_3_LoRA_Test6",
     ]
 
     for type_net in models_to_train_or_test:
