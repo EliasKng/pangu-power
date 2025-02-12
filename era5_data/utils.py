@@ -308,57 +308,75 @@ def visualize_all(
     max_bias_power = _calc_max_bias(output_power, target_power)
 
     # Create figure
-    fig = plt.figure(figsize=(12, 4), dpi=600)
+    fig, axes = plt.subplots(2, 4, figsize=(16, 8), dpi=600)
 
     # Wind Speed Subplots
-    ax_1 = fig.add_subplot(241)
+    ax_1 = axes[0, 0]
     plot_1 = ax_1.imshow(input_ws, cmap="coolwarm")
     ax_1.title.set_text("input[wind speed]")
-    plt.colorbar(plot_1, ax=ax_1, fraction=0.15, pad=0.05)
+    plt.colorbar(plot_1, ax=ax_1, fraction=0.046, pad=0.04)
+    ax_1.set_xticks([])
+    ax_1.set_yticks([])
 
-    ax_2 = fig.add_subplot(242)
+    ax_2 = axes[0, 1]
     plot_2 = ax_2.imshow(target_ws, cmap="coolwarm")
-    plt.colorbar(plot_2, ax=ax_2, fraction=0.05, pad=0.05)
+    plt.colorbar(plot_2, ax=ax_2, fraction=0.046, pad=0.04)
     ax_2.title.set_text("gt[wind speed] Δ24h")
+    ax_2.set_xticks([])
+    ax_2.set_yticks([])
 
-    ax_3 = fig.add_subplot(243)
+    ax_3 = axes[0, 2]
     plot_3 = ax_3.imshow(output_ws, cmap="coolwarm")
-    plt.colorbar(plot_3, ax=ax_3, fraction=0.05, pad=0.05)
+    plt.colorbar(plot_3, ax=ax_3, fraction=0.046, pad=0.04)
     ax_3.title.set_text("pred[wind speed] Δ24h")
+    ax_3.set_xticks([])
+    ax_3.set_yticks([])
 
-    ax_4 = fig.add_subplot(244)
+    ax_4 = axes[0, 3]
     plot_4 = ax_4.imshow(
         output_ws - target_ws, cmap="coolwarm", vmin=-max_bias_ws, vmax=max_bias_ws
     )
-    plt.colorbar(plot_4, ax=ax_4, fraction=0.05, pad=0.05)
+    plt.colorbar(plot_4, ax=ax_4, fraction=0.046, pad=0.04)
     ax_4.title.set_text("bias[wind speed]")
+    ax_4.set_xticks([])
+    ax_4.set_yticks([])
 
     # Power Subplots
     if input_power is not None:
-        ax_5 = fig.add_subplot(245)
+        ax_5 = axes[1, 0]
         plot_5 = ax_5.imshow(input_power, cmap="coolwarm")
-        plt.colorbar(plot_5, ax=ax_5, fraction=0.05, pad=0.05)
+        plt.colorbar(plot_5, ax=ax_5, fraction=0.046, pad=0.04)
         ax_5.title.set_text("input[power]")
+        ax_5.set_xticks([])
+        ax_5.set_yticks([])
+    else:
+        fig.delaxes(axes[1, 0])  # Remove the axis if input_power is not provided
 
-    ax_6 = fig.add_subplot(246)
+    ax_6 = axes[1, 1]
     plot_6 = ax_6.imshow(target_power, cmap="coolwarm")
-    plt.colorbar(plot_6, ax=ax_6, fraction=0.05, pad=0.05)
+    plt.colorbar(plot_6, ax=ax_6, fraction=0.046, pad=0.04)
     ax_6.title.set_text("gt[power]")
+    ax_6.set_xticks([])
+    ax_6.set_yticks([])
 
-    ax_7 = fig.add_subplot(247)
+    ax_7 = axes[1, 2]
     plot_7 = ax_7.imshow(output_power, cmap="coolwarm")
-    plt.colorbar(plot_7, ax=ax_7, fraction=0.05, pad=0.05)
+    plt.colorbar(plot_7, ax=ax_7, fraction=0.046, pad=0.04)
     ax_7.title.set_text("pred[power] Δ24h")
+    ax_7.set_xticks([])
+    ax_7.set_yticks([])
 
-    ax_8 = fig.add_subplot(248)
+    ax_8 = axes[1, 3]
     plot_8 = ax_8.imshow(
         output_power - target_power,
         cmap="coolwarm",
         vmin=-max_bias_power,
         vmax=max_bias_power,
     )
-    plt.colorbar(plot_8, ax=ax_8, fraction=0.05, pad=0.05)
+    plt.colorbar(plot_8, ax=ax_8, fraction=0.046, pad=0.04)
     ax_8.title.set_text("bias[power]")
+    ax_8.set_xticks([])
+    ax_8.set_yticks([])
 
     plt.tight_layout()
     if epoch is None:
