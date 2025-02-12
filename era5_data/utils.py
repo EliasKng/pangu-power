@@ -224,7 +224,7 @@ def visuailze_power(output, target, input, step, path):
 
 
 def _create_subplot(
-    ax, data, title, cmap="coolwarm", vmin=None, vmax=None, fraction=None
+    ax, data, title, cmap="coolwarm", vmin=None, vmax=None, fraction=0.0325
 ):
     """
     Create a subplot with an image, a colorbar, and no axis ticks.
