@@ -223,7 +223,7 @@ def visuailze_power(output, target, input, step, path):
     plt.close()
 
 
-def visuailze_all(
+def visualize_all(
     output_power: torch.Tensor,
     target_power: torch.Tensor,
     input_pangu_surface: torch.Tensor,
