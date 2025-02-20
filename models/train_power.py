@@ -195,7 +195,7 @@ def visualize(
     # Load pre-generated pangu outputs for visualization
     output_upper, output_surface = utils.load_pangu_output(step)
 
-    utils.visuailze_all(
+    utils.visualize_all(
         output_power.detach().cpu().squeeze(),
         target_power.detach().cpu().squeeze(),
         input_surface.detach().cpu().squeeze(),
