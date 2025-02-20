@@ -103,24 +103,12 @@ __C.PG.TEST.USE_LSM = __C.PG.USE_LSM
 __C.PG.BENCHMARK = ConfigNamespace()
 
 __C.PG.BENCHMARK.PRETRAIN_24 = os.path.join(
-    __C.PG_INPUT_PATH, "pretrained_model/pangu_weather_24.onnx"
+    __C.PG_INPUT_PATH,
+    "/lsdf/kit/imk-tro/projects/Gruppe_Quinting/om1434/pretrained_model/pangu_weather_24.onnx",
 )
-__C.PG.BENCHMARK.PRETRAIN_6 = os.path.join(
-    __C.PG_INPUT_PATH, "pretrained_model/pangu_weather_6.onnx"
-)
-__C.PG.BENCHMARK.PRETRAIN_3 = os.path.join(
-    __C.PG_INPUT_PATH, "pretrained_model/pangu_weather_3.onnx"
-)
-__C.PG.BENCHMARK.PRETRAIN_1 = os.path.join(
-    __C.PG_INPUT_PATH, "pretrained_model/pangu_weather_1.onnx"
-)
-
-__C.PG.BENCHMARK.PRETRAIN_24_fp16 = os.path.join(
-    __C.PG_INPUT_PATH, "pretrained_model_fp16/pangu_weather_24_fp16.onnx"
-)
-
 __C.PG.BENCHMARK.PRETRAIN_24_torch = os.path.join(
-    __C.PG_INPUT_PATH, "pretrained_model/pangu_weather_24_torch.pth"
+    __C.PG_INPUT_PATH,
+    "/lsdf/kit/imk-tro/projects/Gruppe_Quinting/om1434/pretrained_model/pangu_weather_24_torch.pth",
 )
 
 __C.POWER = ConfigNamespace()
