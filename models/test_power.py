@@ -7,14 +7,14 @@ from torch import nn
 from typing import Dict, Tuple
 
 from ..era5_data import utils, utils_data, score
-from train_power import (
+from ..models.train_power import (
     model_inference_power,
     model_inference_pangu,
     baseline_inference,
     load_land_sea_mask,
     visualize,
 )
-from baseline_formula import BaselineFormula
+from ..models.baseline_formula import BaselineFormula
 
 
 warnings.filterwarnings(

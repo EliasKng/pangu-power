@@ -8,8 +8,8 @@ from torch.nn.modules.module import _addindent
 import matplotlib.pyplot as plt
 import logging
 
-from config import cfg
-import utils_data as utils_data
+from ..era5_data.config import cfg
+from ..era5_data import utils_data
 
 
 def logger_info(logger_name, log_path="default_logger.log"):

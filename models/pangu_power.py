@@ -1,11 +1,11 @@
 from typing import List, Tuple, Optional, Union
-
 import torch
-from layers import (
+
+from ..models.layers import (
     PatchRecoveryPowerAllWithClippedReLU,
     PowerConv,
 )
-from pangu_model import PanguModel
+from ..models.pangu_model import PanguModel
 from ..era5_data.config import cfg
 
 

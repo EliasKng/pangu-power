@@ -10,7 +10,7 @@ from tensorboardX import SummaryWriter
 
 from ..era5_data import utils, utils_data
 from ..era5_data.config import cfg
-from baseline_formula import BaselineFormula
+from ..models.baseline_formula import BaselineFormula
 
 
 warnings.filterwarnings(

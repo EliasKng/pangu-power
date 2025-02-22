@@ -9,7 +9,7 @@ import random
 from torch.utils import data
 from typing import Optional
 
-from config import cfg
+from ..era5_data.config import cfg
 
 
 class DataPrefetcher:
