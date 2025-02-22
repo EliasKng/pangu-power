@@ -2,10 +2,10 @@ from torch import nn
 import torch
 import torch.utils.checkpoint as checkpoint
 import torch.nn.functional as F
-
 from timm.models.layers import DropPath, trunc_normal_
 from collections import OrderedDict
-from era5_data.config import cfg
+
+from ..era5_data.config import cfg
 
 
 class PatchEmbedding_pretrain(nn.Module):

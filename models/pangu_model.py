@@ -8,8 +8,9 @@ from layers import (
     PatchRecovery_pretrain,
 )
 from timm.models.layers import trunc_normal_
-from era5_data import utils_data
 from collections import OrderedDict
+
+from ..era5_data import utils_data
 
 
 class PanguModel(nn.Module):

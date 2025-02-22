@@ -5,8 +5,8 @@ from layers import (
     PatchRecoveryPowerAllWithClippedReLU,
     PowerConv,
 )
-from era5_data.config import cfg
 from pangu_model import PanguModel
+from ..era5_data.config import cfg
 
 
 class PanguPowerPatchRecovery(PanguModel):

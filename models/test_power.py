@@ -1,7 +1,12 @@
 import os
 from datetime import datetime
 import warnings
-from era5_data import utils, utils_data, score
+import logging
+import torch
+from torch import nn
+from typing import Dict, Tuple
+
+from ..era5_data import utils, utils_data, score
 from train_power import (
     model_inference_power,
     model_inference_pangu,
@@ -10,10 +15,6 @@ from train_power import (
     visualize,
 )
 from baseline_formula import BaselineFormula
-import logging
-import torch
-from torch import nn
-from typing import Dict, Tuple
 
 
 warnings.filterwarnings(

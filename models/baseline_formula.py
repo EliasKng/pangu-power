@@ -1,7 +1,7 @@
 from torch import Tensor
 import torch
 from torch import nn
-from era5_data.config import cfg
+from ..era5_data.config import cfg
 
 
 class BaselineFormula(nn.Module):

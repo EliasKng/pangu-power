@@ -15,16 +15,16 @@ import logging
 from tensorboardX import SummaryWriter
 from peft import LoraConfig, get_peft_model  # type: ignore
 
-from era5_data import utils
-from era5_data import energy_dataset
-from era5_data.config import cfg
-from models.train_power import train
-from models.test_power import test, test_baseline
-from models.pangu_power import (
+from ..era5_data import utils
+from ..era5_data import energy_dataset
+from ..era5_data.config import cfg
+from ..models.train_power import train
+from ..models.test_power import test, test_baseline
+from ..models.pangu_power import (
     PanguPowerPatchRecovery,
     PanguPowerConv,
 )
-from models.pangu_model import PanguModel
+from ..models.pangu_model import PanguModel
 
 
 """

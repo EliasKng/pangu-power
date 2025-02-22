@@ -3,15 +3,13 @@ import numpy as np
 import sys
 import os
 from typing import Tuple, Optional
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from era5_data.config import cfg
-from era5_data import utils_data as utils_data
 import torch
-
 from torch.nn.modules.module import _addindent
 import matplotlib.pyplot as plt
 import logging
+
+from config import cfg
+import utils_data as utils_data
 
 
 def logger_info(logger_name, log_path="default_logger.log"):
