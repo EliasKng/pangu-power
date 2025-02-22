@@ -4,7 +4,7 @@ from argparse import Namespace
 from typing import List
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-sys.path.append("/hkfs/home/project/hk-project-test-mlperf/om1434/masterarbeit")
+# sys.path.append("/hkfs/home/project/hk-project-test-mlperf/om1434/masterarbeit")
 from era5_data import energy_dataset
 from era5_data import utils
 from era5_data.config import cfg
@@ -14,6 +14,7 @@ from torch.utils.data.distributed import DistributedSampler
 from torch.distributed import init_process_group, destroy_process_group
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch import nn
+from torch import multiprocessing as mp
 import os
 from random import randrange
 from torch.utils import data
@@ -526,48 +527,34 @@ def test_baselines(args: Namespace, baseline_type: str) -> None:
 
 
 if __name__ == "__main__":
-    models_to_train_or_test = [
-        "PowerConv/PanguPowerConv_Test10",
-        #     "ModelAblations/MA_3_LoRA_Test6",
-        #     "ModelAblations/MA_3_LoRA_Test5",
-        #     "PatchRecovery/PatchRecoveryAll_Test10",
-        #     "PatchRecovery/PatchRecoveryAll_Test5",  # "patchrecovery no clipped relu?",
-        #     "ModelAblations/MA_2_PR_Test1",  # "patchrecovery upsample",
-        #     "PowerConv/PanguPowerConv_64_1_k3",  # ,"padding_artifact 64_1_k3"
-        #     "PowerConv/PanguPowerConv_Test11",
-    ]
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--type_net", type=str, default="Test")
+    parser.add_argument(
+        "--gpu_list",
+        type=int,
+        nargs="+",
+        default=[0],
+        help="List of GPUs to use for finetuning",
+    )
+    parser.add_argument("--dist", action="store_true", help="Enable distributed mode")
+    parser.add_argument(
+        "--start_epoch", type=int, default=1, help="Starting epoch for training"
+    )
 
-    for type_net in models_to_train_or_test:
-        parser = argparse.ArgumentParser()
-        parser.add_argument("--type_net", type=str, default=type_net)
-        parser.add_argument(
-            "--gpu_list",
-            type=int,
-            nargs="+",
-            default=[0],
-            help="List of GPUs to use for finetuning",
-        )
-        parser.add_argument(
-            "--dist", action="store_true", help="Enable distributed mode"
-        )
-        parser.add_argument(
-            "--start_epoch", type=int, default=1, help="Starting epoch for training"
-        )
+    args = parser.parse_args()
+    _assert_gpu_list(args.gpu_list, args.dist)
 
-        args = parser.parse_args()
-        _assert_gpu_list(args.gpu_list, args.dist)
+    world_size = len(args.gpu_list)
+    print(f"World size: {world_size if args.dist else 1}")
 
-        world_size = len(args.gpu_list)
-        print(f"World size: {world_size if args.dist else 1}")
+    master_port = str(12357 + randrange(-20, 20, 1))
+    print(f"Master port: {master_port}")
 
-        master_port = str(12357 + randrange(-20, 20, 1))
-        print(f"Master port: {master_port}")
+    # Spawn processes for distributed training
+    if args.dist and torch.cuda.is_available():
+        mp.spawn(main, args=(args, world_size, master_port), nprocs=world_size)  # type: ignore
+    else:
+        main(0, args, 1, master_port)
+    test_best_model(args)
 
-        # Spawn processes for distributed training
-        # if args.dist and torch.cuda.is_available():
-        #     mp.spawn(main, args=(args, world_size, master_port), nprocs=world_size)  # type: ignore
-        # else:
-        #     main(0, args, 1, master_port)
-        test_best_model(args)
-
-        # test_baselines(args, args.type_net)
+    # test_baselines(args, args.type_net)
