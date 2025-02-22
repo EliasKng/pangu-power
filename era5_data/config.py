@@ -33,8 +33,10 @@ __C.LSM_PATH = (
     "/lsdf/kit/imk-tro/projects/Gruppe_Quinting/om1434/offshore/lsm_global.zarr"
 )
 # Mean Power path
-__C.MEAN_POWER_PATH = "/home/hk-project-test-mlperf/om1434/masterarbeit/wind_fusion/pangu_pytorch/data/aux_data/mean_power_per_grid_point.npy"
-__C.POWER_CURVE_PATH = "/home/hk-project-test-mlperf/om1434/masterarbeit/wind_fusion/pangu_pytorch/data/power_curves/wind_turbine_power_curves.csv"
+__C.MEAN_POWER_PATH = (
+    "/lsdf/kit/imk-tro/projects/Gruppe_Quinting/om1434/mean_power_per_grid_point.npy"
+)
+__C.POWER_CURVE_PATH = "/lsdf/kit/imk-tro/projects/Gruppe_Quinting/om1434/power_curves/wind_turbine_power_curves.csv"
 
 # Pangu pre-inferenced outputs: outputs that have been pre-inferenced with Pangu and are used for visualization
 __C.PANGU_INFERENCE_OUTPUTS = (
