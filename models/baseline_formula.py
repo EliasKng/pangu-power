@@ -1,11 +1,7 @@
-import sys
-import os
 from torch import Tensor
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import torch
 from torch import nn
-from wind_fusion.pangu_pytorch.era5_data.config import cfg
+from era5_data.config import cfg
 
 
 class BaselineFormula(nn.Module):

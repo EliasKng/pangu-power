@@ -1,13 +1,6 @@
-import sys
 import os
 from argparse import Namespace
 from typing import List
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-# sys.path.append("/hkfs/home/project/hk-project-test-mlperf/om1434/masterarbeit")
-from era5_data import energy_dataset
-from era5_data import utils
-from era5_data.config import cfg
 import torch
 from torch.optim.adam import Adam
 from torch.utils.data.distributed import DistributedSampler
@@ -15,20 +8,24 @@ from torch.distributed import init_process_group, destroy_process_group
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch import nn
 from torch import multiprocessing as mp
-import os
 from random import randrange
 from torch.utils import data
-from wind_fusion.pangu_pytorch.models.train_power import train
-from wind_fusion.pangu_pytorch.models.test_power import test, test_baseline
+import argparse
+import logging
+from tensorboardX import SummaryWriter
+from peft import LoraConfig, get_peft_model  # type: ignore
+
+from era5_data import utils
+from era5_data import energy_dataset
+from era5_data.config import cfg
+from models.train_power import train
+from models.test_power import test, test_baseline
 from models.pangu_power import (
     PanguPowerPatchRecovery,
     PanguPowerConv,
 )
 from models.pangu_model import PanguModel
-import argparse
-import logging
-from tensorboardX import SummaryWriter
-from peft import LoraConfig, get_peft_model  # type: ignore
+
 
 """
 Finetune pangu_power on the energy dataset
@@ -526,7 +523,7 @@ def test_baselines(args: Namespace, baseline_type: str) -> None:
     )
 
 
-if __name__ == "__main__":
+def run():
     parser = argparse.ArgumentParser()
     parser.add_argument("--type_net", type=str, default="Test")
     parser.add_argument(

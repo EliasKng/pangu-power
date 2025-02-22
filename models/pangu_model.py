@@ -1,10 +1,6 @@
-import sys
-import os
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from torch import nn
 import torch
-from models.layers import (
+from layers import (
     PatchEmbedding_pretrain,
     DownSample,
     EarthSpecificLayer,

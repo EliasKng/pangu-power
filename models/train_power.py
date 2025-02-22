@@ -4,9 +4,9 @@ import torch
 from torch import nn
 import torch.distributed as dist
 import warnings
-from wind_fusion.pangu_pytorch.era5_data import utils, utils_data
-from wind_fusion.pangu_pytorch.models.baseline_formula import BaselineFormula
-from wind_fusion.pangu_pytorch.era5_data.config import cfg
+from era5_data import utils, utils_data
+from baseline_formula import BaselineFormula
+from era5_data.config import cfg
 from typing import Tuple, Dict, List, Union, Optional
 import logging
 from tensorboardX import SummaryWriter

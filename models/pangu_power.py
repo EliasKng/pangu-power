@@ -1,15 +1,12 @@
-import sys
-import os
 from typing import List, Tuple, Optional, Union
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import torch
-from models.layers import (
+from layers import (
     PatchRecoveryPowerAllWithClippedReLU,
     PowerConv,
 )
 from era5_data.config import cfg
-from models.pangu_model import PanguModel
+from pangu_model import PanguModel
 
 
 class PanguPowerPatchRecovery(PanguModel):

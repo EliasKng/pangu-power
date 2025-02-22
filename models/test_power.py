@@ -1,15 +1,15 @@
 import os
 from datetime import datetime
 import warnings
-from wind_fusion.pangu_pytorch.era5_data import utils, utils_data, score
-from wind_fusion.pangu_pytorch.models.train_power import (
+from era5_data import utils, utils_data, score
+from train_power import (
     model_inference_power,
     model_inference_pangu,
     baseline_inference,
     load_land_sea_mask,
     visualize,
 )
-from wind_fusion.pangu_pytorch.models.baseline_formula import BaselineFormula
+from baseline_formula import BaselineFormula
 import logging
 import torch
 from torch import nn

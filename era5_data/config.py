@@ -5,6 +5,7 @@ import torch
 __C = ConfigNamespace()
 cfg = __C
 __C.ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+__C.PROJECT_ROOT_DIR = "/hkfs/home/project/hk-project-test-mlperf/om1434/masterarbeit"
 
 __C.GLOBAL = ConfigNamespace()
 __C.GLOBAL.DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
