@@ -7,8 +7,6 @@ from torch.utils.data.distributed import DistributedSampler
 from torch.distributed import init_process_group, destroy_process_group
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch import nn
-from torch import multiprocessing as mp
-from random import randrange
 from torch.utils import data
 import argparse
 import logging
@@ -342,6 +340,9 @@ def main(
     -------
     None
     """
+
+    _assert_gpu_list(args.gpu_list, args.dist)
+
     ddp_setup(rank, world_size, master_port, args.gpu_list)
 
     print(f"Rank: {rank}, World Size: {world_size}")
@@ -521,37 +522,3 @@ def test_baselines(args: Namespace, baseline_type: str) -> None:
         res_path=output_path,
         baseline_type=baseline_type,
     )
-
-
-def run():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--type_net", type=str, default="Test")
-    parser.add_argument(
-        "--gpu_list",
-        type=int,
-        nargs="+",
-        default=[0],
-        help="List of GPUs to use for finetuning",
-    )
-    parser.add_argument("--dist", action="store_true", help="Enable distributed mode")
-    parser.add_argument(
-        "--start_epoch", type=int, default=1, help="Starting epoch for training"
-    )
-
-    args = parser.parse_args()
-    _assert_gpu_list(args.gpu_list, args.dist)
-
-    world_size = len(args.gpu_list)
-    print(f"World size: {world_size if args.dist else 1}")
-
-    master_port = str(12357 + randrange(-20, 20, 1))
-    print(f"Master port: {master_port}")
-
-    # Spawn processes for distributed training
-    if args.dist and torch.cuda.is_available():
-        mp.spawn(main, args=(args, world_size, master_port), nprocs=world_size)  # type: ignore
-    else:
-        main(0, args, 1, master_port)
-    test_best_model(args)
-
-    # test_baselines(args, args.type_net)
