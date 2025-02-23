@@ -1,4 +1,4 @@
-# Pangu-PyTorch
+# pangu-power
 
 This repository adapts the [Pangu-Weather](https://github.com/198808xc/Pangu-Weather) model for wind power forecasting using [Parameter-Efficient Fine-Tuning (PEFT)](https://github.com/huggingface/peft) methods. The repository is forked from Shan Zhao implementation of Pangu-Weather: [Pangu-pytorch](https://github.com/zhaoshan2/pangu-pytorch).
 
