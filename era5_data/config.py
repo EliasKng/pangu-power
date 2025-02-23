@@ -5,7 +5,6 @@ import torch
 __C = ConfigNamespace()
 cfg = __C
 __C.ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-__C.PROJECT_ROOT_DIR = "/hkfs/home/project/hk-project-test-mlperf/om1434/masterarbeit"
 
 __C.GLOBAL = ConfigNamespace()
 __C.GLOBAL.DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -19,7 +18,7 @@ __C.GLOBAL.SEED = 99
 __C.GLOBAL.NUM_STREADS = 16
 
 # Paths
-__C.PG_INPUT_PATH = os.path.join(__C.ROOT_DIR, "data")
+__C.PG_INPUT_PATH = "/lsdf/kit/imk-tro/projects/Gruppe_Quinting/om1434/"
 assert __C.PG_INPUT_PATH is not None
 
 __C.PG_OUT_PATH = os.path.join(__C.GLOBAL.PATH, "result")
@@ -29,6 +28,7 @@ __C.ERA5_PATH = "/lsdf/kit/imk-tro/projects/Gruppe_Quinting/ec.era5/1959-2023_01
 __C.POWER_PATH = (
     "/lsdf/kit/imk-tro/projects/Gruppe_Quinting/om1434/offshore/offshore.zarr"
 )
+__C.PANGU_AUX_DATA_PATH = "/lsdf/kit/imk-tro/projects/Gruppe_Quinting/om1434/aux_data"
 # Land sea mask path
 __C.LSM_PATH = (
     "/lsdf/kit/imk-tro/projects/Gruppe_Quinting/om1434/offshore/lsm_global.zarr"
@@ -97,10 +97,10 @@ __C.PG.TEST.BATCH_SIZE = 1
 __C.PG.TEST.USE_LSM = __C.PG.USE_LSM
 
 # Shorten training for testing purposes
-# __C.PG.TRAIN.EPOCHS = 5
-# __C.PG.TRAIN.END_TIME = "20160102"
-# __C.PG.VAL.END_TIME = "20170108"
-# __C.PG.TEST.END_TIME = "20180108"
+__C.PG.TRAIN.EPOCHS = 5
+__C.PG.TRAIN.END_TIME = "20160102"
+__C.PG.VAL.END_TIME = "20170108"
+__C.PG.TEST.END_TIME = "20180108"
 
 
 __C.PG.BENCHMARK = ConfigNamespace()
