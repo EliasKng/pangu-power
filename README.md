@@ -12,15 +12,6 @@ This project explores fine-tuning a global AI weather prediction model (AIWPM), 
 
 The results demonstrate the feasibility and potential of adapting AIWPMs for wind power forecasting.
 
-## Examples
-
-### PatchRecovery Forecast![Exemplary forecast of the PatchRecovery model](images/predictions/2018011000_power_patch_recovery_test10.png)
-
-### PowerConv Forecast![Exemplary PowerConv forecasts](images/predictions/2018011000_power_power_conv_test11_test10.png)
-
-### LoRA Forecast![Exemplary LoRA model forecast](images/predictions/2018011000_power_LoRA_MA_3_Test5.png)
-
-
 ## Installation
 **Note:** This setup is specifically for ROCm-supported GPUs. If using a different setup, a different version of PyTorch may be required.
 
@@ -58,3 +49,13 @@ Your environment should now be ready to run Pangu-PyTorch with ROCm support.
 All required data for inference, training, and testing is stored on lsdf and correctly linked in `config.py`, therefore no further steps have to be taken here. For details on where the files are stored, see `config.py`.
 The original pangu-pytorch data can be found here: https://huggingface.co/datasets/zhaoshan/pangu_pytorch.
 
+
+
+
+## Examples
+
+### PatchRecovery Forecast![Exemplary forecast of the PatchRecovery model](images/predictions/2018011000_power_patch_recovery_test10.png)
+
+### PowerConv Forecast![Exemplary PowerConv forecasts](images/predictions/2018011000_power_power_conv_test11_test10.png)
+
+### LoRA Forecast![Exemplary LoRA model forecast](images/predictions/2018011000_power_LoRA_MA_3_Test5.png)
