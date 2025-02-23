@@ -2,6 +2,8 @@
 
 This repository adapts the [Pangu-Weather](https://github.com/198808xc/Pangu-Weather) model for wind power forecasting using [Parameter-Efficient Fine-Tuning (PEFT)](https://github.com/huggingface/peft) methods. The repository is forked from Shan Zhao implementation of Pangu-Weather: [Pangu-pytorch](https://github.com/zhaoshan2/pangu-pytorch).
 
+**Note:** the `./notebooks`-folder contains code that is not part of the package itself. The notebooks were mostly used for exploring data and creating some visualizations. This code is not required for running the pangu_power package, but included for documentation purposes.
+
 ## Wind Power Forecasting with AI Weather Models
 
 This project explores fine-tuning a global AI weather prediction model (AIWPM), specifically Pangu-Weather, to forecast wind power capacity factors across Europe. Three PEFT strategies are investigated: PatchRecovery, PowerConv, and LoRA.
@@ -42,6 +44,7 @@ Follow these steps to set up the environment:
    ```sh
    pip install --force-reinstall -v "torch==2.5.0+rocm6.2" "torchaudio==2.5.0+rocm6.2" "torchvision==0.20.0+rocm6.2" --index-url https://download.pytorch.org/whl/rocm6.2
    ```
+8. Run ```start_finetune_power.py```
 
 Your environment should now be ready to run Pangu-PyTorch with ROCm support.
 
