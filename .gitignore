@@ -14,6 +14,8 @@ fig/
 data
 
 venv/
+venv2/
+venv_amd/
 
 *.log
 
@@ -22,3 +24,5 @@ huggingface_data/
 .vscode/
 .mypy_cache/
 .ruff_cache/
+
+.DS_Store
