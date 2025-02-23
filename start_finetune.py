@@ -2,7 +2,7 @@ import torch
 from torch import multiprocessing as mp
 from random import randrange
 import argparse
-from pangu_pytorch_power.finetune.finetune_power import main, test_best_model
+from pangu_power.finetune.finetune_power import main, test_best_model
 
 
 if __name__ == "__main__":
