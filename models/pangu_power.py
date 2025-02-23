@@ -1,3 +1,5 @@
+# Most of this file is very similar to pangu_model, however, PanguPowerPatchRecovery replaces pangus output layer with a power output layer and PanguPowerConv adds convolutional layers to the output of pangu to predict power capacity factors.
+
 from typing import List, Tuple, Optional, Union
 import torch
 

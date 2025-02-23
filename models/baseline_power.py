@@ -6,7 +6,6 @@ from torch import nn
 class BaselineModel_Persistence(nn.Module):
     """A baseline persistence model. It simply returns the input as the output."""
 
-    # @TODO(EliasKng): Requires input to be energy data instead of weather data. Fix.
     def forward(
         self,
         input: Tensor,

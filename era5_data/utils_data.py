@@ -1,3 +1,5 @@
+# This file was only marginally adapted
+
 import xarray as xr
 from datetime import datetime, timedelta
 import pandas as pd

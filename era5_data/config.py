@@ -1,3 +1,5 @@
+# This file was only marginally adapted, new config entries were added
+
 from types import SimpleNamespace as ConfigNamespace
 import os
 import torch

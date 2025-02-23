@@ -1,3 +1,5 @@
+# This file was only marginally adapted. Some visualization functions were added
+
 import pandas as pd
 import numpy as np
 import sys

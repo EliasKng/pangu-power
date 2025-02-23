@@ -1,3 +1,5 @@
+# This file was only marginally adapted
+
 from torch import nn
 import torch
 from timm.models.layers import trunc_normal_

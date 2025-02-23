@@ -1,3 +1,5 @@
+# This file was only marginally adapted. New layers were added to the model, starting with PatchRecoveryPowerSurface.
+
 from torch import nn
 import torch
 import torch.utils.checkpoint as checkpoint
