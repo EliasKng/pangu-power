@@ -22,7 +22,7 @@ Follow these steps to set up the environment:
 1. Install **Python 3.9.16**.
 2. Clone the repository:
    ```sh
-   git clone https://github.com/EliasKng/pangu-pytorch
+   git clone https://github.com/EliasKng/pangu-power
    ```
 3. Create a virtual environment:
    ```sh
