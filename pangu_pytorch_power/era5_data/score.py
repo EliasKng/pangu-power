@@ -1,3 +1,5 @@
+# This file was only marginally adapted
+
 import numpy as np
 
 # from utils.YParams import YParams
