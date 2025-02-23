@@ -14,7 +14,7 @@ fig/
 data
 
 venv/
-
+venv2/
 venv_amd/
 
 *.log
