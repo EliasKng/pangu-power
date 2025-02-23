@@ -14,11 +14,11 @@ The results demonstrate the feasibility and potential of adapting AIWPMs for win
 
 ## Examples
 
-### PatchRecovery Forecast![Exemplary forecast of the PatchRecovery model](images/predictions/2018011000_power_patch_recovery_test10.pdf)
+### PatchRecovery Forecast![Exemplary forecast of the PatchRecovery model](images/predictions/2018011000_power_patch_recovery_test10.png)
 
-### PowerConv Forecast![Exemplary PowerConv forecasts](images/predictions/2018011000_power_power_conv_test11_test10.pdf)
+### PowerConv Forecast![Exemplary PowerConv forecasts](images/predictions/2018011000_power_power_conv_test11_test10.png)
 
-### LoRA Forecast![Exemplary LoRA model forecast](images/predictions/2018011000_power_LoRA_MA_3_Test5.pdf)
+### LoRA Forecast![Exemplary LoRA model forecast](images/predictions/2018011000_power_LoRA_MA_3_Test5.png)
 
 
 ## Installation
